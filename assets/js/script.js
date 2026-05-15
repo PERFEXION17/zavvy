@@ -11,4 +11,25 @@ function themeToggle() {
   const theme = document.body.classList.contains("darkmode") ? "dark" : "light";
   localStorage.setItem("theme", theme);
 }
-themeBtn.addEventListener("click", themeToggle);
+
+if (themeBtn) {
+  themeBtn.addEventListener("click", themeToggle);
+}
+
+// ==================== MENU TOGGLE ====================
+
+const menuToggle = document.getElementById("menu-toggle");
+const menuClose = document.getElementById("menu-close");
+const mobileMenu = document.getElementById("mob-menu");
+
+if (menuToggle && mobileMenu) {
+  menuToggle.addEventListener("click", () => {
+    mobileMenu.classList.add("open");
+  });
+}
+
+if (menuClose && mobileMenu) {
+  menuClose.addEventListener("click", () => {
+    mobileMenu.classList.remove("open");
+  });
+}

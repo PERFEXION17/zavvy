@@ -1,15 +1,15 @@
 @import "index.css";
-@import "exam.css";
+@import "jamb.css";
 @import "blog.css";
 
-
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 
 :root {
   /* ===== COLOUR ===== */
-  --primary-color: #1a1a1a;
-  --accent-color: #c8a80b;
-  --bg-color: hsl(240, 90%, 98%);
+  --primary-color: #000;
+  --accent-color: #6c3baa;
+  --accent-color-2: #d4af37;
+  --bg-color: #f5f5fe;
   --neutral: white;
   --text-color: #090909;
 
@@ -18,42 +18,53 @@
   --spacing-md: 20px;
   --spacing-l: 30px;
   --spacing-xl: 40px;
+  --spacing-xxl: 80px;
 
   /* ===== FONT SYSTEM ===== */
+  --font-main: "Cinzel", serif;
   --font: "Montserrat", -apple-system, sans-serif;
   --font-size-xs: 0.875rem;
   --font-size-ui: 1rem;
   --font-size-title: 1.5rem;
   --font-size-h1: 2.5rem;
   --font-weight-light: 300;
+  --font-weight-md: 550;
   --font-weight-bold: 700;
 
   /* ===== UTILITY ===== */
   --border-radius: 10px;
   --border-radius-s: 5px;
   --border: 1px solid var(--accent-color);
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  --transition: all .3s ease;
+  --shadow: 0 4px 6px #6c3baa20;
+  --transition: all 0.5s ease-in-out;
 }
 
 .darkmode {
   --primary-color: #f9f9f9;
-  --accent-color: #d4af37;
+  --accent-color: #6c3baa;
   --bg-color: #000010;
   --neutral: #00000e;
   --text-color: #eee;
   --shadow: 0 4px 6px rgba(255, 255, 255, 0.2);
 }
 
-body {
+* {
   margin: 0;
-  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  margin: 0;
+  max-width: 100%;
   min-height: 95vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-family: var(--font);
   background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font);
   transition: var(--transition);
 }
 
@@ -70,13 +81,96 @@ a {
   text-decoration: none;
 }
 
+li {
+  list-style: none;
+}
+
+img {
+  width: 100%;
+}
+
+/* ===== BUTTONS ===== */
+
+button{
+  outline: none;
+  border: none;
+}
+
+.btn-trace {
+  position: relative;
+  padding: var(--spacing-xs) var(--spacing-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--primary-color);
+  font-family: var(--font);
+  font-size: var(--font-size-ui);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 2px;
+  border-radius: var(--border-radius-s);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  cursor: pointer;
+  overflow: visible;
+}
+
+.btn-trace span {
+  position: relative;
+  z-index: 2;
+}
+
+.btn-trace svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+.btn-trace rect {
+  width: 100%;
+  height: 100%;
+  stroke: #6c3baa50;
+  stroke-width: 2px;
+  fill: transparent;
+
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-trace:hover rect {
+  stroke-dashoffset: 0;
+}
+
+.btn-trace:focus {
+  outline: 2px solid #6c3baa50;
+  outline-offset: 4px;
+}
+
 /* ===== FOOTER ===== */
+
+footer {
+  padding: var(--spacing-md);
+  background: var(--primary-color);
+}
+
 .credit {
-  color: var(--text-color);
+  color: var(--neutral);
   text-align: center;
   font-size: 14px;
 }
 
 .credit a {
   color: var(--accent-color);
+}
+
+.credit a:hover{
+  text-decoration: underline;
 }
