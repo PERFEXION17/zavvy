@@ -6,6 +6,11 @@
     <title>PrepArena</title>
     <link rel="stylesheet" href="/assets/css/main.css" />
     <link
+      rel="shortcut icon"
+      href="/assets/img/ai-logo-solid.webp"
+      type="image/x-icon"
+    />
+    <link
       rel="stylesheet"
       type="text/css"
       href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/thin/style.css"
@@ -17,6 +22,10 @@
     ></script>
   </head>
   <body>
+    <!-- Global Loading Screen -->
+    <div id="loading-screen" class="loading-overlay">
+      <div class="spinner" aria-label="Loading PrepArena"></div>
+    </div>
     <header>
       <nav>
         <div class="logo"><a href="index.html">PrepArena</a></div>
@@ -38,7 +47,7 @@
         </div>
         <div class="link-wrap-desk">
           <div class="utilities">
-            <a href="auth.html?mode=signup" id="signup-btn" class="btn-trace">
+            <a href="auth.html?mode=signup" class="signup-btn btn-trace">
               <span>Sign Up</span>
               <svg>
                 <rect
@@ -54,8 +63,7 @@
             </a>
             <a
               href="auth.html?mode=login"
-              id="login-btn"
-              class="btn-trace"
+              class="login-btn btn-trace"
               style="border: 2px solid #6c3baa50"
             >
               <span>Login</span>
@@ -71,6 +79,7 @@
                 ></rect>
               </svg>
             </a>
+            <a href="dashboard.html" class="profile"></a>
           </div>
         </div>
 
@@ -81,13 +90,15 @@
     </header>
 
     <section id="mob-menu" class="mob-menu">
-      <button id="menu-close" class="menu-close"><i class="ph-thin ph-x-circle"></i></button>
+      <button id="menu-close" class="menu-close">
+        <i class="ph-thin ph-x-circle"></i>
+      </button>
       <a href="waec.html">The A1</a>
       <a href="jamb.html">CBT-X</a>
       <a href="#" style="color: var(--accent-color)">THE SYNAPSE</a>
       <a href="blog.html">Blog</a>
       <div class="utilities">
-        <a href="auth.html?mode=signup" id="signup-btn" class="btn-trace">
+        <a href="auth.html?mode=signup" class="signup-btn btn-trace">
           <span>Sign Up</span>
           <svg>
             <rect
@@ -103,8 +114,7 @@
         </a>
         <a
           href="auth.html?mode=login"
-          id="login-btn"
-          class="btn-trace"
+          class="login-btn btn-trace"
           style="border: 2px solid #6c3baa50"
         >
           <span>Login</span>
@@ -120,6 +130,7 @@
             ></rect>
           </svg>
         </a>
+        <a href="dashboard.html" id="profile" class="profile"></a>
       </div>
     </section>
 
@@ -310,6 +321,10 @@
           </article>
         </div>
       </section>
+
+      <button id="theme-toggle" class="theme-toggle index-theme">
+        <i class="ph-thin ph-power"></i>
+      </button>
     </main>
 
     <footer>
@@ -324,6 +339,6 @@
         </p>
       </div>
     </footer>
-    <script src="/assets/js/script.js"></script>
+    <script type="module" src="/assets/js/script.js"></script>
   </body>
 </html>
