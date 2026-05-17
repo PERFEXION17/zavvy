@@ -31,11 +31,11 @@ function initialiseAuthPage() {
   if (mode === "signup") {
     signupCard.classList.remove("hidden");
     loginCard.classList.add("hidden");
-    pageTitle.textContent = "PrepArena | Create Account";
+    pageTitle.textContent = "Zavvy! | Create Account";
   } else {
     loginCard.classList.remove("hidden");
     signupCard.classList.add("hidden");
-    pageTitle.textContent = "PrepArena | Login";
+    pageTitle.textContent = "Zavvy! | Login";
   }
 }
 
