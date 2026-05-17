@@ -22,6 +22,10 @@ const settingsUsername = document.getElementById("settings-username");
 const settingsAge = document.getElementById("settings-age");
 const settingsDepartment = document.getElementById("settings-department");
 const settingsEmail = document.getElementById("settings-email");
+const avatarClickZone = document.getElementById("avatar-click-zone");
+const avatarFileInput = document.getElementById("avatar-file-input");
+const settingsAvatarImg = document.getElementById("settings-avatar-img");
+const headerAvatarImg = document.getElementById("user-img");
 
 // --- Authentication & Initialization ---
 onAuthStateChanged(auth, async (user) => {
@@ -37,7 +41,6 @@ onAuthStateChanged(auth, async (user) => {
         const fullName = userData.displayName || user.email;
         const firstName = fullName.split(" ")[0];
 
-        // 1. Dynamic Greeting
         if (welcomeTextHeading) {
           if (userData.profileComplete === false) {
             welcomeTextHeading.textContent = "Welcome, ";
@@ -51,7 +54,6 @@ onAuthStateChanged(auth, async (user) => {
 
         if (statStreak) {
           const currentStreak = userData.stats?.streakDays ?? 0;
-
           statStreak.textContent = `${currentStreak} Days`;
         }
 
@@ -69,6 +71,15 @@ onAuthStateChanged(auth, async (user) => {
             document.getElementById("settings-department-trigger").textContent =
               deptValue;
         }
+
+        if (userData.avatar) {
+          if (settingsAvatarImg) settingsAvatarImg.src = userData.avatar;
+          if (headerAvatarImg) headerAvatarImg.src = userData.avatar;
+        } else {
+          const defaultPic = "./assets/img/avatar.webp";
+          if (settingsAvatarImg) settingsAvatarImg.src = defaultPic;
+          if (headerAvatarImg) headerAvatarImg.src = defaultPic;
+        }
       }
     } catch (error) {
       console.error("Error fetching user profile data:", error);
@@ -78,6 +89,58 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "auth.html";
   }
 });
+
+// --- Avatar Engine Event Handlers ---
+if (avatarClickZone && avatarFileInput) {
+  // 1. Forward click from frame to hidden input file array
+  avatarClickZone.addEventListener("click", () => avatarFileInput.click());
+
+  // 2. Process image choice when uploaded
+  avatarFileInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Guard: Prevent uploading monster-sized files over 1MB
+    if (file.size > 1024 * 1024) {
+      alert("Image is too large! Please choose an image under 1MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64String = event.target.result; // Holds the light data string representation
+
+      // Temporarily show loading state visually
+      if (settingsAvatarImg) settingsAvatarImg.style.opacity = "0.5";
+
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        const userRef = doc(db, "users", currentUser.uid);
+
+        // Upload string direct to user document container field
+        await updateDoc(userRef, {
+          avatar: base64String
+        });
+
+        // Sync UI locations smoothly
+        if (settingsAvatarImg) settingsAvatarImg.src = base64String;
+        if (headerAvatarImg) headerAvatarImg.src = base64String;
+        
+        console.log("Avatar synced to Firestore collection.");
+      } catch (error) {
+        console.error("Error uploading avatar:", error);
+        alert("Failed to save avatar image to server.");
+      } finally {
+        if (settingsAvatarImg) settingsAvatarImg.style.opacity = "1";
+      }
+    };
+
+    // Fire off reader convert engine
+    reader.readAsDataURL(file);
+  });
+}
 
 // --- Settings Form Update Listener ---
 

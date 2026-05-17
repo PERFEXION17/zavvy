@@ -128,7 +128,7 @@
             </div>
             <div class="user-con">
               <div class="profile">
-                <span id="user-img"></span>
+                <img id="user-img" src="" alt="">
               </div>
               <div class="user-name">
                 <span id="user-name">User</span>
@@ -366,6 +366,31 @@
                 <h3 class="card-header">Profile</h3>
 
                 <form id="profile-settings-form" class="profile-form">
+                  <div class="avatar-settings-container form-group">
+                    <!-- The clickable profile frame that shows the current avatar -->
+                    <div class="avatar-preview-wrapper" id="avatar-click-zone">
+                      <img
+                        src="./assets/img/avatar.webp"
+                        id="settings-avatar-img"
+                        alt="User Avatar"
+                      />
+                      <div class="avatar-hover-overlay">
+                        <i class="ph-thin ph-camera"></i>
+                      </div>
+                    </div>
+
+                    <!-- Hidden file input that triggers on frame click -->
+                    <input
+                      type="file"
+                      id="avatar-file-input"
+                      accept="image/png, image/jpeg, image/webp"
+                      class="hidden"
+                    />
+                    <p class="avatar-hint">
+                      Click frame to change photo (Max 1MB)
+                    </p>
+                  </div>
+
                   <div class="form-group">
                     <label for="settings-fullname">Full Name</label>
                     <input

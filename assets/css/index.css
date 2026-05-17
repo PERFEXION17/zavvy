@@ -87,7 +87,7 @@ nav {
   color: var(--neutral);
 }
 
-.profile{
+.profile {
   height: 40px;
   width: 40px;
   background-image: url(/assets/img/avatar.webp);
@@ -96,6 +96,7 @@ nav {
   background-repeat: no-repeat;
   border-radius: 50%;
   border: 2px solid #6c3baa;
+  overflow: hidden;
 }
 
 .menu-toggle {
@@ -353,7 +354,7 @@ nav {
   text-shadow: var(--text-shadow);
 }
 
-.index-theme{
+.index-theme {
   position: fixed;
   bottom: var(--spacing-xs);
   right: var(--spacing-xs);
