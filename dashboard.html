@@ -3,13 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PrepArena | Dashboard</title>
+    <title>Dashboard | Zavvy!</title>
     <link rel="stylesheet" href="/assets/css/main.css" />
-    <link
-      rel="shortcut icon"
-      href="/assets/img/ai-logo-solid.webp"
-      type="image/x-icon"
-    />
+    <link rel="shortcut icon" href="/assets/img/Z!.webp" type="image/x-icon" />
     <link
       rel="stylesheet"
       type="text/css"
@@ -75,7 +71,9 @@
       <aside class="dash-sidebar">
         <div class="dash-top">
           <div class="logo">
-            <a href="index.html">PrepArena</a>
+            <a href="index.html"
+              ><img src="/assets/img/zavvy!.webp" alt="zavvy logo"
+            /></a>
           </div>
 
           <nav class="sidebar-links">
@@ -85,53 +83,72 @@
               data-tab="dashboard"
             >
               <span class="icon"><i class="ph-thin ph-house-simple"></i></span>
-              Dashboard
+              <span class="pad-dash-text"> Dashboard </span>
             </a>
             <a href="#performance" class="sidebar-item" data-tab="performance">
               <span class="icon"><i class="ph-thin ph-chart-bar"></i></span>
-              Performance
+              <span class="pad-dash-text">Performance</span>
             </a>
             <a href="#leaderboard" class="sidebar-item" data-tab="leaderboard">
               <span class="icon"><i class="ph-thin ph-trophy"></i></span>
-              Leaderboard
+              <span class="pad-dash-text">Leaderboard</span>
             </a>
             <a href="#settings" class="sidebar-item" data-tab="settings">
               <span class="icon"><i class="ph-thin ph-gear-six"></i></span>
-              Settings
+              <span class="pad-dash-text">Settings</span>
             </a>
           </nav>
         </div>
 
         <div class="sidebar-footer">
           <button class="logout-btn btn-trace logout-btn-dash">
-            <span class="icon"><i class="ph-thin ph-sign-out"></i></span> Sign
-            Out
+            <span class="icon"><i class="ph-thin ph-sign-out"></i></span>
+            <span class="pad-dash-text">Sign Out</span>
           </button>
         </div>
       </aside>
 
       <main class="dash-content-area">
         <header class="dash-top-bar">
-          <div class="search-box">
-            <span class="search-icon"
-              ><i class="ph-thin ph-magnifying-glass"></i
-            ></span>
-            <input
-              type="text"
-              placeholder="Search topics, exams or formulas..."
-            />
+          <div class="mob-nav-bar">
+            <button id="" class="btn-trace">
+              <span><i class="ph-thin ph-caret-left"></i></span>
+              <svg aria-hidden="true" focusable="false">
+                <rect
+                  x="0"
+                  y="0"
+                  rx="5"
+                  ry="5"
+                  fill="none"
+                  width="100%"
+                  height="100%"
+                ></rect>
+              </svg>
+            </button>
+            <p>Dashboard</p>
           </div>
-
-          <div class="user-status-widget">
-            <div class="notification-bell">
-              <i class="ph-thin ph-bell-simple"></i>
+          <div class="dash-top-wrap">
+            <div class="search-box">
+              <span class="search-icon"
+                ><i class="ph-thin ph-magnifying-glass"></i
+              ></span>
+              <input
+                type="text"
+                placeholder="Search topics, exams or formulas..."
+              />
             </div>
-            <div class="user-con">
-              <div class="profile">
-                <img id="user-img" src="" alt="">
+
+            <div class="user-status-widget">
+              <div class="notification-bell">
+                <i class="ph-thin ph-bell-simple"></i>
               </div>
-              <div class="user-name">
-                <span id="user-name">User</span>
+              <div class="user-con">
+                <div class="profile">
+                  <img id="user-img" src="" alt="" />
+                </div>
+                <div class="user-name">
+                  <span id="user-name">User</span>
+                </div>
               </div>
             </div>
           </div>
@@ -378,7 +395,6 @@
                         <i class="ph-thin ph-camera"></i>
                       </div>
                     </div>
-
                     <!-- Hidden file input that triggers on frame click -->
                     <input
                       type="file"
@@ -491,6 +507,12 @@
                 </form>
               </section>
             </div>
+            <div class="sidebar-footer mob-dash-foot">
+              <button class="logout-btn btn-trace logout-btn-dash">
+                <span class="icon"><i class="ph-thin ph-sign-out"></i></span>
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
         <button id="theme-toggle" class="theme-toggle index-theme">
@@ -498,6 +520,25 @@
         </button>
       </main>
     </div>
+
+    <aside class="mob-dash">
+      <div class="mob-dash-top">
+        <nav class="sidebar-links">
+          <a href="#dashboard" class="sidebar-item active" data-tab="dashboard">
+            <span class="icon"><i class="ph-thin ph-house-simple"></i></span>
+          </a>
+          <a href="#performance" class="sidebar-item" data-tab="performance">
+            <span class="icon"><i class="ph-thin ph-chart-bar"></i></span>
+          </a>
+          <a href="#leaderboard" class="sidebar-item" data-tab="leaderboard">
+            <span class="icon"><i class="ph-thin ph-trophy"></i></span>
+          </a>
+          <a href="#settings" class="sidebar-item" data-tab="settings">
+            <span class="icon"><i class="ph-thin ph-gear-six"></i></span>
+          </a>
+        </nav>
+      </div>
+    </aside>
 
     <script type="module" src="/assets/js/dashboard-auth.js"></script>
     <script type="module" src="/assets/js/dashboard.js"></script>

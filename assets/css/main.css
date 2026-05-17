@@ -24,6 +24,8 @@
   --spacing-l: 30px;
   --spacing-xl: 40px;
   --spacing-xxl: 80px;
+    --sidebar-width: 260px;
+    --sidebar-width-pad: 120px;
 
   /* ===== FONT SYSTEM ===== */
   --font-main: "Cinzel", serif;
@@ -37,7 +39,6 @@
   --font-weight-bold: 700;
 
   /* ===== UTILITY ===== */
-  --sidebar-width: 260px;
   --border-radius: 10px;
   --border-radius-s: 5px;
   --border: 1px solid var(--accent-color);

@@ -6,7 +6,7 @@ import {
 import {
   doc,
   getDoc,
-  updateDoc, // <-- Added for updating profile data
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // --- Core DOM Elements ---
@@ -49,8 +49,8 @@ onAuthStateChanged(auth, async (user) => {
           }
         }
 
-        if (userNameSpan) userNameSpan.textContent = fullName;
-        if (dashUsernameSpan) dashUsernameSpan.textContent = `${firstName}!`;
+        if (userNameSpan) userNameSpan.textContent = userData.username;
+        if (dashUsernameSpan) dashUsernameSpan.textContent = `${userData.username}!`;
 
         if (statStreak) {
           const currentStreak = userData.stats?.streakDays ?? 0;
@@ -121,13 +121,13 @@ if (avatarClickZone && avatarFileInput) {
 
         // Upload string direct to user document container field
         await updateDoc(userRef, {
-          avatar: base64String
+          avatar: base64String,
         });
 
         // Sync UI locations smoothly
         if (settingsAvatarImg) settingsAvatarImg.src = base64String;
         if (headerAvatarImg) headerAvatarImg.src = base64String;
-        
+
         console.log("Avatar synced to Firestore collection.");
       } catch (error) {
         console.error("Error uploading avatar:", error);

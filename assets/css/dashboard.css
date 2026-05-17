@@ -96,6 +96,13 @@
   z-index: 90;
 }
 
+.dash-top-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .search-box {
   padding: var(--spacing-xs);
   width: 350px;
@@ -144,6 +151,7 @@
 
 .user-name {
   font-weight: var(--font-weight-md);
+  /* text-overflow: ellipsis; */
 }
 
 .dash-inner-grid {
@@ -213,6 +221,9 @@
 
 .welcome-badge-img {
   width: 30%;
+  display: flex;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  overflow: hidden;
 }
 
 .metric-card {
@@ -417,12 +428,9 @@
 }
 
 .avatar-hint {
-  font-size: 0.75rem;
-  color: var(--dash-text-muted);
+  font-size: var(--font-size-xs);
+  color: var(--text-color);
 }
-
-/* Also ensure your main top-bar dashboard header avatar has an matching ID */
-/* Example element in your header: <img id="header-avatar-img" src="..." /> */
 
 /* Custom Input and Select Baseline Styles */
 .form-control {
@@ -490,58 +498,197 @@
   display: none;
 }
 
+.mob-dash {
+  display: none;
+}
+
+.mob-nav-bar {
+  display: none;
+}
+
+.mob-dash-foot {
+  display: none;
+}
+
 /* ==================== SCREEN RESPONSIVENESS OVERRIDES =================== */
 @media (max-width: 900px) {
+  .dash-sidebar {
+    width: var(--sidebar-width-pad);
+  }
+
+  .dash-content-area {
+    margin-left: var(--sidebar-width-pad);
+  }
+
   .dash-inner-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .span-twothirds {
     grid-column: span 2;
   }
+
+  .pad-dash-text {
+    display: none;
+  }
+
+  .welcome-banner {
+    padding: var(--spacing-md);
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: var(--spacing-md);
+  }
+
+  .welcome-badge-img {
+    order: -1;
+    width: 60%;
+    display: flex;
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    overflow: hidden;
+  }
+
+  .welcome-text {
+    margin-top: var(--spacing-md);
+    margin-bottom: 0;
+  }
+
+  .welcome-text p {
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1024px) {
+  .welcome-banner {
+    padding: var(--spacing-md);
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: var(--spacing-md);
+  }
+
+  .welcome-badge-img {
+    order: -1;
+    width: 50%;
+    display: flex;
+  }
+
+  .welcome-text {
+    margin-top: var(--spacing-md);
+    margin-bottom: 0;
+    align-self: flex-start;
+  }
+
+  .welcome-text p {
+    margin-bottom: 0;
+  }
 }
 
 @media (max-width: 600px) {
   .dash-sidebar {
+    display: none;
+  }
+
+  .mob-dash {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    padding: var(--spacing-xs) var(--spacing-md);
     width: 100%;
     height: auto;
-    bottom: auto;
+    display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    z-index: 100;
   }
 
-  .sidebar-links,
-  .sidebar-footer {
-    display: none;
-  } /* On mobile, move control triggers to an overlay burger or footer */
+  .mob-dash-top {
+    width: 100%;
+  }
+
+  .sidebar-links {
+    width: 100%;
+    flex-direction: row;
+  }
 
   .dash-content-area {
     margin-left: 0;
-    padding-top: var(--topbar-height);
   }
+
   .dash-top-bar {
-    padding: 0 20px;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
   }
+
+  .mob-nav-bar {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .mob-nav-bar p {
+    font-size: var(--font-size-ui);
+    font-weight: var(--font-weight-md);
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+  }
+
+  .dash-top-wrap {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   .search-box {
     width: 200px;
   }
 
   .dash-inner-grid {
+    padding: var(--spacing-md);
     grid-template-columns: 1fr;
-    padding: 20px;
   }
 
   .span-twothirds,
   .span-full {
     grid-column: span 1;
   }
+
   .welcome-banner {
+    padding: var(--spacing-md);
     flex-direction: column;
-    text-align: center;
-    gap: 20px;
+    align-items: flex-start;
+    text-align: left;
+    gap: var(--spacing-md);
   }
+
+  .welcome-text,
+  .welcome-text p {
+    margin: 0;
+  }
+
+  .welcome-text h1 {
+    font-size: var(--font-size-title);
+  }
+
   .welcome-badge-img {
     order: -1;
+    width: 50%;
+    display: flex;
+  }
+
+  .pane-header {
+    padding: var(--spacing-xl) var(--spacing-md);
+    text-align: center;
+  }
+
+  .mob-dash-foot {
+    margin: auto;
+    width: 70%;
+    display: flex;
   }
 }
