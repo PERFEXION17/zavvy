@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zavvy!</title>
     <link rel="stylesheet" href="/assets/css/main.css" />
-    <link
-      rel="shortcut icon"
-      href="/assets/img/Z!.webp"
-      type="image/x-icon"
-    />
+    <link rel="shortcut icon" href="/assets/img/Z!.webp" type="image/x-icon" />
     <link
       rel="stylesheet"
       type="text/css"
@@ -22,13 +18,19 @@
     ></script>
   </head>
   <body>
-    <!-- Global Loading Screen -->
     <div id="loading-screen" class="loading-overlay">
-      <div class="spinner" aria-label="Loading PrepArena"></div>
+      <div class="loading-img">
+        <img src="/assets/img/Z!.webp" alt="loading img" />
+      </div>
     </div>
+
     <header>
       <nav>
-        <div class="logo"><a href="index.html"><img src="/assets/img/zavvy!.webp" alt="zavvy logo"></a></div>
+        <div class="logo">
+          <a href="index.html"
+            ><img src="/assets/img/zavvy!.webp" alt="zavvy logo"
+          /></a>
+        </div>
         <div class="link-wrap-desk">
           <div class="links">
             <div class="links-drop">
@@ -79,7 +81,9 @@
                 ></rect>
               </svg>
             </a>
-            <a href="dashboard.html" class="profile"><img id="user-img" src="" alt=""></a>
+            <a href="dashboard.html" class="profile"
+              ><img id="user-img" src="" alt=""
+            /></a>
           </div>
         </div>
 
@@ -321,9 +325,15 @@
           </article>
         </div>
       </section>
-
-      <button id="theme-toggle" class="theme-toggle index-theme">
-        <i class="ph-thin ph-power"></i>
+      
+      <button
+        id="theme-toggle"
+        class="btn-trace theme-toggle index-theme"
+      >
+        <span><i class="ph-thin ph-power"></i></span>
+        <svg aria-hidden="true" focusable="false">
+          <circle cx="20" cy="20" r="19" />
+        </svg>
       </button>
     </main>
 

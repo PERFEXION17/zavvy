@@ -19,7 +19,9 @@
   </head>
   <body>
     <div id="loading-screen" class="loading-overlay">
-      <div class="spinner" aria-label="Loading PrepArena"></div>
+      <div class="loading-img">
+        <img src="/assets/img/Z!.webp" alt="loading img" />
+      </div>
     </div>
 
     <section id="mob-menu" class="mob-menu">
@@ -515,8 +517,12 @@
             </div>
           </div>
         </div>
-        <button id="theme-toggle" class="theme-toggle index-theme">
-          <i class="ph-thin ph-power"></i>
+
+        <button id="theme-toggle" class="btn-trace theme-toggle index-theme">
+          <span><i class="ph-thin ph-power"></i></span>
+          <svg aria-hidden="true" focusable="false">
+            <circle cx="20" cy="20" r="19" />
+          </svg>
         </button>
       </main>
     </div>

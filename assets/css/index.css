@@ -360,7 +360,7 @@ nav {
 }
 
 .index-theme {
-  position: fixed;
+  position: fixed !important;
   bottom: var(--spacing-xs);
   right: var(--spacing-xs);
   width: 40px;
@@ -368,9 +368,30 @@ nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--bg-color);
-  border-radius: 50%;
+  background-color: var(--bg-color) !important;
+  border-radius: 50% !important;
   box-shadow: var(--shadow);
+}
+
+.index-theme circle {
+  fill: transparent;
+  stroke: #6c3baa50;
+  stroke-width: 2px;
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.index-theme:hover circle {
+  stroke-dashoffset: 0;
+}
+
+.index-theme:focus {
+  outline: 2px solid #6c3baa50;
+  outline-offset: 4px;
+  border-radius: 50% !important; /* Forces the browser focus ring to be circular */
 }
 
 @media (max-width: 900px) {
