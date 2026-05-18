@@ -369,11 +369,6 @@
   cursor: pointer;
 }
 
-.table-action-btn:hover {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-}
-
 .form-group {
   margin: var(--spacing-md) 0;
   display: flex;

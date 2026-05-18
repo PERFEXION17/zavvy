@@ -1,106 +1,119 @@
-import { auth, db } from "./firebase-config.js";
+import { auth } from "./firebase-config.js";
 import {
   onAuthStateChanged,
   signOut,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import {
-  doc,
-  getDoc,
-  updateDoc,
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  getUserProfile,
+  updateUserProfile,
+  createUserProfile,
+} from "./auth.js";
 
-// --- Core DOM Elements ---
-const userNameSpan = document.getElementById("user-name");
-const dashUsernameSpan = document.getElementById("dash-username");
-const logoutBtn = document.getElementById("logout-btn");
-const welcomeTextHeading = document.getElementById("welcome-text");
+// --- Core DOM Elements (Centralized) ---
+const DOM = {
+  userNameSpan: document.getElementById("user-name"),
+  dashUsernameSpan: document.getElementById("dash-username"),
+  logoutBtn: document.getElementById("logout-btn"),
+  welcomeTextHeading: document.getElementById("welcome-text"),
+  statStreak: document.getElementById("stat-streak"),
 
-// --- Settings Panel DOM Elements ---
-const settingsForm = document.getElementById("profile-settings-form");
-const settingsFullName = document.getElementById("settings-fullname");
-const settingsUsername = document.getElementById("settings-username");
-const settingsAge = document.getElementById("settings-age");
-const settingsDepartment = document.getElementById("settings-department");
-const settingsEmail = document.getElementById("settings-email");
-const avatarClickZone = document.getElementById("avatar-click-zone");
-const avatarFileInput = document.getElementById("avatar-file-input");
-const settingsAvatarImg = document.getElementById("settings-avatar-img");
-const headerAvatarImg = document.getElementById("user-img");
+  settingsForm: document.getElementById("profile-settings-form"),
+  settingsFullName: document.getElementById("settings-fullname"),
+  settingsUsername: document.getElementById("settings-username"),
+  settingsState: document.getElementById("settings-state"), // Added
+  settingsSchool: document.getElementById("settings-school"), // Added
+  settingsDepartment: document.getElementById("settings-department"),
+  settingsEmail: document.getElementById("settings-email"),
+
+  avatarClickZone: document.getElementById("avatar-click-zone"),
+  avatarFileInput: document.getElementById("avatar-file-input"),
+  settingsAvatarImg: document.getElementById("settings-avatar-img"),
+  headerAvatarImg: document.getElementById("user-img"),
+
+  dropdownWrapper: document.getElementById("department-dropdown"),
+  dropdownTrigger: document.getElementById("settings-department-trigger"),
+  updateProfileBtn: document.getElementById("update-profile-btn"),
+};
 
 // --- Authentication & Initialization ---
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    console.log("User is logged in:", user.uid);
-    try {
-      const userRef = doc(db, "users", user.uid);
-      const docSnap = await getDoc(userRef);
-      const statStreak = document.getElementById("stat-streak");
-
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        const fullName = userData.displayName || user.email;
-        const firstName = fullName.split(" ")[0];
-
-        if (welcomeTextHeading) {
-          if (userData.profileComplete === false) {
-            welcomeTextHeading.textContent = "Welcome, ";
-          } else {
-            welcomeTextHeading.textContent = "Welcome back, ";
-          }
-        }
-
-        if (userNameSpan) userNameSpan.textContent = userData.username;
-        if (dashUsernameSpan) dashUsernameSpan.textContent = `${userData.username}!`;
-
-        if (statStreak) {
-          const currentStreak = userData.stats?.streakDays ?? 0;
-          statStreak.textContent = `${currentStreak} Days`;
-        }
-
-        if (settingsFullName)
-          settingsFullName.value = userData.displayName || "";
-        if (settingsUsername) settingsUsername.value = userData.username || "";
-        if (settingsAge) settingsAge.value = userData.age || "";
-        if (settingsEmail) settingsEmail.value = userData.email || user.email;
-
-        if (userData.setupProgress?.department) {
-          const deptValue = userData.setupProgress.department;
-          if (document.getElementById("settings-department"))
-            document.getElementById("settings-department").value = deptValue;
-          if (document.getElementById("settings-department-trigger"))
-            document.getElementById("settings-department-trigger").textContent =
-              deptValue;
-        }
-
-        if (userData.avatar) {
-          if (settingsAvatarImg) settingsAvatarImg.src = userData.avatar;
-          if (headerAvatarImg) headerAvatarImg.src = userData.avatar;
-        } else {
-          const defaultPic = "./assets/img/avatar.webp";
-          if (settingsAvatarImg) settingsAvatarImg.src = defaultPic;
-          if (headerAvatarImg) headerAvatarImg.src = defaultPic;
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching user profile data:", error);
-    }
-  } else {
-    // Redirect if not authenticated
+  if (!user) {
     window.location.href = "auth.html";
+    return;
+  }
+
+  console.log("Zavvy! User is logged in:", user.uid);
+
+  try {
+    let userData = await getUserProfile(user.uid);
+
+    // Safety Net: Provision profile if missing
+    if (!userData) {
+      await createUserProfile(user);
+      userData = await getUserProfile(user.uid);
+    }
+
+    populateUI(userData, user.email);
+  } catch (error) {
+    console.error("Error fetching user profile data:", error);
   }
 });
 
-// --- Avatar Engine Event Handlers ---
-if (avatarClickZone && avatarFileInput) {
-  // 1. Forward click from frame to hidden input file array
-  avatarClickZone.addEventListener("click", () => avatarFileInput.click());
+// --- UI Populator Function ---
+function populateUI(userData, fallbackEmail) {
+  const fullName = userData.fullName || userData.displayName || fallbackEmail;
+  const firstName = fullName.split(" ")[0];
 
-  // 2. Process image choice when uploaded
-  avatarFileInput.addEventListener("change", async (e) => {
+  if (DOM.welcomeTextHeading) {
+    DOM.welcomeTextHeading.textContent = userData.profileComplete
+      ? "Welcome back, "
+      : "Welcome, ";
+  }
+
+  if (DOM.userNameSpan)
+    DOM.userNameSpan.textContent = userData.username || fullName;
+  if (DOM.dashUsernameSpan)
+    DOM.dashUsernameSpan.textContent = `${userData.username || firstName}!`;
+
+  if (DOM.statStreak) {
+    DOM.statStreak.textContent = `${userData.currentStreak || 0} Days`;
+  }
+
+  if (DOM.settingsFullName) DOM.settingsFullName.value = fullName;
+  if (DOM.settingsUsername)
+    DOM.settingsUsername.value = userData.username || "";
+
+  // Populating new Demographics fields
+  if (DOM.settingsState) DOM.settingsState.value = userData.state || "";
+  if (DOM.settingsSchool) DOM.settingsSchool.value = userData.school || "";
+
+  if (DOM.settingsEmail)
+    DOM.settingsEmail.value = userData.email || fallbackEmail;
+
+  // Handle department safely from setupProgress sub-object
+  if (userData.setupProgress?.department) {
+    const deptValue = userData.setupProgress.department;
+    if (DOM.settingsDepartment) DOM.settingsDepartment.value = deptValue;
+    if (DOM.dropdownTrigger) DOM.dropdownTrigger.textContent = deptValue;
+  }
+
+  // Handle Avatar seamlessly matching backend metadata default asset
+  const avatarSrc =
+    userData.avatar || userData.avatarUrl || "./assets/img/default_gold.png";
+  if (DOM.settingsAvatarImg) DOM.settingsAvatarImg.src = avatarSrc;
+  if (DOM.headerAvatarImg) DOM.headerAvatarImg.src = avatarSrc;
+}
+
+// --- Avatar Engine Event Handlers ---
+if (DOM.avatarClickZone && DOM.avatarFileInput) {
+  DOM.avatarClickZone.addEventListener("click", () =>
+    DOM.avatarFileInput.click(),
+  );
+
+  DOM.avatarFileInput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Guard: Prevent uploading monster-sized files over 1MB
     if (file.size > 1024 * 1024) {
       alert("Image is too large! Please choose an image under 1MB.");
       return;
@@ -108,91 +121,102 @@ if (avatarClickZone && avatarFileInput) {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-      const base64String = event.target.result; // Holds the light data string representation
-
-      // Temporarily show loading state visually
-      if (settingsAvatarImg) settingsAvatarImg.style.opacity = "0.5";
+      const base64String = event.target.result;
+      if (DOM.settingsAvatarImg) DOM.settingsAvatarImg.style.opacity = "0.5";
 
       try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) return;
-
-        const userRef = doc(db, "users", currentUser.uid);
-
-        // Upload string direct to user document container field
-        await updateDoc(userRef, {
-          avatar: base64String,
+        // Updating user's schema data
+        await updateUserProfile(auth.currentUser.uid, {
+          avatarUrl: base64String,
         });
 
-        // Sync UI locations smoothly
-        if (settingsAvatarImg) settingsAvatarImg.src = base64String;
-        if (headerAvatarImg) headerAvatarImg.src = base64String;
-
-        console.log("Avatar synced to Firestore collection.");
+        if (DOM.settingsAvatarImg) DOM.settingsAvatarImg.src = base64String;
+        if (DOM.headerAvatarImg) DOM.headerAvatarImg.src = base64String;
+        console.log("Zavvy! Avatar synced to Firestore.");
       } catch (error) {
         console.error("Error uploading avatar:", error);
         alert("Failed to save avatar image to server.");
       } finally {
-        if (settingsAvatarImg) settingsAvatarImg.style.opacity = "1";
+        if (DOM.settingsAvatarImg) DOM.settingsAvatarImg.style.opacity = "1";
       }
     };
-
-    // Fire off reader convert engine
     reader.readAsDataURL(file);
   });
 }
 
 // --- Settings Form Update Listener ---
-
-if (settingsForm) {
-  settingsForm.addEventListener("submit", async (e) => {
+if (DOM.settingsForm) {
+  DOM.settingsForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    // Visual feedback during update
-    const updateBtn = document.getElementById("update-profile-btn");
-    setButtonLoading(updateBtn, true);
+    setButtonLoading(DOM.updateProfileBtn, true);
 
     try {
-      const userRef = doc(db, "users", currentUser.uid);
+      const newFullName = DOM.settingsFullName.value.trim();
+      const newUsername = DOM.settingsUsername.value.toLowerCase().trim();
+      const newState = DOM.settingsState
+        ? DOM.settingsState.value.trim()
+        : null;
+      const newSchool = DOM.settingsSchool
+        ? DOM.settingsSchool.value.trim()
+        : null;
 
-      // Update the database record
-      await updateDoc(userRef, {
-        displayName: settingsFullName.value.trim(),
-        username: settingsUsername.value.toLowerCase().trim(),
-        age: parseInt(settingsAge.value),
-        "setupProgress.department": settingsDepartment.value,
+      // Bundle structural updates matching the Firestore schema rules
+      await updateUserProfile(currentUser.uid, {
+        fullName: newFullName,
+        displayName: newFullName,
+        username: newUsername,
+        state: newState || null,
+        school: newSchool || null,
+        "setupProgress.department": DOM.settingsDepartment.value || null,
         profileComplete: true,
       });
 
-      // Update UI elements instantly without a reload
-      const newFullName = settingsFullName.value.trim();
       const newFirstName = newFullName.split(" ")[0];
+      if (DOM.userNameSpan)
+        DOM.userNameSpan.textContent = newUsername || newFullName;
+      if (DOM.dashUsernameSpan)
+        DOM.dashUsernameSpan.textContent = `${newUsername || newFirstName}!`;
+      if (DOM.welcomeTextHeading)
+        DOM.welcomeTextHeading.textContent = "Welcome back, ";
 
-      if (userNameSpan) userNameSpan.textContent = newFullName;
-      if (dashUsernameSpan) dashUsernameSpan.textContent = `${newFirstName}!`;
-      if (welcomeTextHeading) welcomeTextHeading.textContent = "Welcome back, ";
-
-      alert("Profile updated successfully!");
+      alert("Zavvy! Profile updated successfully.");
     } catch (error) {
       console.error("Error updating profile:", error);
       alert("Failed to update profile. Please try again.");
     } finally {
-      setButtonLoading(updateBtn, false);
+      setButtonLoading(DOM.updateProfileBtn, false);
     }
   });
 }
 
-/**
- * Toggles a button between a standard state and a loading state with a spinner
- * @param {HTMLButtonElement} buttonEl - The button element to toggle
- * @param {boolean} isLoading - True to show spinner, False to restore button
- */
+// --- Custom Dropdown Controller Engine ---
+if (DOM.dropdownWrapper && DOM.dropdownTrigger) {
+  const panel = DOM.dropdownWrapper.querySelector(".dropdown-options-panel");
+  const items = DOM.dropdownWrapper.querySelectorAll(".dropdown-item");
+
+  DOM.dropdownTrigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    panel.classList.toggle("hidden");
+  });
+
+  items.forEach((item) => {
+    item.addEventListener("click", () => {
+      const chosenValue = item.getAttribute("data-value");
+      DOM.dropdownTrigger.textContent = chosenValue;
+      DOM.settingsDepartment.value = chosenValue;
+      panel.classList.add("hidden");
+    });
+  });
+
+  document.addEventListener("click", () => panel.classList.add("hidden"));
+}
+
+// --- Utilities ---
 function setButtonLoading(buttonEl, isLoading) {
   if (!buttonEl) return;
-
   if (isLoading) {
     buttonEl.classList.add("btn-loading");
     buttonEl.disabled = true;
@@ -202,36 +226,8 @@ function setButtonLoading(buttonEl, isLoading) {
   }
 }
 
-// --- Custom Dropdown Controller Engine ---
-const dropdownWrapper = document.getElementById("department-dropdown");
-if (dropdownWrapper) {
-  const trigger = document.getElementById("settings-department-trigger");
-  const panel = dropdownWrapper.querySelector(".dropdown-options-panel");
-  const hiddenInput = document.getElementById("settings-department");
-  const items = dropdownWrapper.querySelectorAll(".dropdown-item");
-
-  // Toggle dropdown open/close on click
-  trigger.addEventListener("click", (e) => {
-    e.stopPropagation();
-    panel.classList.toggle("hidden");
-  });
-
-  // Handle option selection
-  items.forEach((item) => {
-    item.addEventListener("click", () => {
-      const chosenValue = item.getAttribute("data-value");
-
-      // Update trigger text and hidden form value
-      trigger.textContent = chosenValue;
-      hiddenInput.value = chosenValue;
-
-      // Close panel
-      panel.classList.add("hidden");
-    });
-  });
-
-  // Close dropdown if user clicks anywhere else on the screen
-  document.addEventListener("click", () => {
-    panel.classList.add("hidden");
+if (DOM.logoutBtn) {
+  DOM.logoutBtn.addEventListener("click", () => {
+    signOut(auth).catch((error) => console.error("Logout failed", error));
   });
 }
