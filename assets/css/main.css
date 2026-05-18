@@ -231,7 +231,7 @@ button {
 }
 
 .loading-img{
-  width: 7.5%;
+  width: 10%;
   animation: beat 2.5s infinite ease-in-out;
 }
 
