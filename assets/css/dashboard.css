@@ -602,8 +602,10 @@
   }
 
   .sidebar-links {
+    padding: var(--spacing-xs) var(--spacing-md);
     width: 100%;
     flex-direction: row;
+    border-radius: var(--border-radius);
   }
 
   .dash-content-area {
@@ -685,5 +687,9 @@
     margin: auto;
     width: 70%;
     display: flex;
+  }
+
+  .dash-index-theme{
+    bottom: var(--spacing-xxl) !important;
   }
 }

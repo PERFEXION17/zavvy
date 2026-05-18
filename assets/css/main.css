@@ -231,7 +231,7 @@ button {
 }
 
 .loading-img{
-  width: 10%;
+  width: 7.5%;
   animation: beat 2.5s infinite ease-in-out;
 }
 
@@ -274,4 +274,10 @@ footer {
 
 .credit a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .loading-img{
+    width: 25%;
+  }
 }
