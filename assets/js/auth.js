@@ -191,3 +191,14 @@ if (loginCard) {
     }
   }
 }
+
+const togglePassword = document.querySelector("#togglePassword");
+const passwordField = document.querySelector(".password-input");
+
+if(togglePassword)togglePassword.addEventListener("click", function () {
+  const type =
+    passwordField.getAttribute("type") === "password" ? "text" : "password";
+  passwordField.setAttribute("type", type);
+
+  togglePassword.classList.toggle("ph-eye-slash");
+});
