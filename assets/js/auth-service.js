@@ -30,7 +30,7 @@ export async function createUserProfile(user) {
       email: user.email,
       createdAt: serverTimestamp(),
       username:
-        user.username || `Zavvy_${Math.floor(1000 + Math.random() * 9000)}`,
+        user.displayName || `Zavvy_${Math.floor(1000 + Math.random() * 9000)}`,
       fullName: user.displayName || "",
       role: "student",
       state: null,

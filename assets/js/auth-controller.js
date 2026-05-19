@@ -1,6 +1,6 @@
 /**
  * auth-controller.js - The Auth Page Feature Module
- * Only executes when the user is specifically on the Auth page.
+ * Clean, maintainable, and integrated with global toast system
  */
 
 import {
@@ -8,13 +8,17 @@ import {
   registerWithEmailService,
   loginWithEmailService,
 } from "./auth-service.js";
-import { setButtonLoading } from "./ui.js";
+
+import { setButtonLoading, showAuthMessage } from "./auth-ui.js";
 
 export function initAuthModule() {
   setupAuthRouting();
   setupAuthListeners();
   setupPasswordToggle();
+  setupFormValidation();
 }
+
+// ==================== ROUTING ====================
 
 function setupAuthRouting() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -36,6 +40,8 @@ function setupAuthRouting() {
   }
 }
 
+// ==================== LISTENERS ====================
+
 function setupAuthListeners() {
   const googleLoginBtn = document.getElementById("google-login-btn");
   const googleSignupBtn = document.getElementById("google-signup-btn");
@@ -43,93 +49,153 @@ function setupAuthListeners() {
   const signupForm = document.getElementById("signup-form");
 
   const handleGoogleSignIn = async () => {
+    console.log("Google Sign-In initiated");
+
+    const googleBtns = [googleLoginBtn, googleSignupBtn].filter(Boolean);
+    googleBtns.forEach((btn) => setButtonLoading(btn, true));
+
     try {
-      await signInWithGoogleService();
-      window.location.href = "portal.html";
+      const result = await signInWithGoogleService();
+      console.log("Google Sign-In Successful!", result.user.email);
+
+      showAuthMessage("Welcome to Zavvy!", "success");
+
+      setTimeout(() => {
+        window.location.href = "portal.html";
+      }, 800);
     } catch (error) {
-      handleAuthError(error);
+      console.error("Google Sign-In Error:", error);
+      showAuthMessage(getErrorMessage(error));
+    } finally {
+      googleBtns.forEach((btn) => setButtonLoading(btn, false));
     }
   };
 
-  if (googleLoginBtn)
-    googleLoginBtn.addEventListener("click", handleGoogleSignIn);
-  if (googleSignupBtn)
-    googleSignupBtn.addEventListener("click", handleGoogleSignIn);
+  googleLoginBtn?.addEventListener("click", handleGoogleSignIn);
+  googleSignupBtn?.addEventListener("click", handleGoogleSignIn);
 
-  if (signupForm) {
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const signupBtn = signupForm.querySelector("button[type='submit']");
-      const email = document.getElementById("signup-email").value;
-      const password = document.getElementById("signup-password").value;
+  signupForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const signupBtn = signupForm.querySelector("button[type='submit']");
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value;
 
-      setButtonLoading(signupBtn, true);
-      try {
-        await registerWithEmailService(email, password);
+    setButtonLoading(signupBtn, true);
+
+    try {
+      await registerWithEmailService(email, password);
+      showAuthMessage("Account created successfully!", "success");
+
+      setTimeout(() => {
         window.location.href = "portal.html";
-      } catch (error) {
-        handleAuthError(error);
-        setButtonLoading(signupBtn, false);
-      }
-    });
-  }
+      }, 1000);
+    } catch (error) {
+      showAuthMessage(getErrorMessage(error));
+    } finally {
+      setButtonLoading(signupBtn, false);
+    }
+  });
 
-  if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const loginBtn = loginForm.querySelector("button[type='submit']");
-      const email = document.getElementById("login-email").value;
-      const password = document.getElementById("login-password").value;
+  loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const loginBtn = loginForm.querySelector("button[type='submit']");
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
 
-      setButtonLoading(loginBtn, true);
-      try {
-        await loginWithEmailService(email, password);
+    setButtonLoading(loginBtn, true);
+
+    try {
+      await loginWithEmailService(email, password);
+      showAuthMessage("Login successful! Welcome back", "success");
+
+      setTimeout(() => {
         window.location.href = "portal.html";
-      } catch (error) {
-        handleAuthError(error);
-        setButtonLoading(loginBtn, false);
-      }
-    });
-  }
+      }, 800);
+    } catch (error) {
+      showAuthMessage(getErrorMessage(error));
+    } finally {
+      setButtonLoading(loginBtn, false);
+    }
+  });
 }
 
-function handleAuthError(error) {
-  let message = "An unexpected error occurred.";
+// ==================== ERROR HANDLING ====================
+
+function getErrorMessage(error) {
   switch (error.code) {
     case "auth/email-already-in-use":
-      message = "This email is already registered. Try logging in.";
-      break;
+      return "This email is already registered. Please log in instead.";
     case "auth/invalid-email":
-      message = "Please enter a valid email address.";
-      break;
+      return "Please enter a valid email address.";
     case "auth/weak-password":
-      message = "Password should be at least 6 characters.";
-      break;
+      return "Password should be at least 6 characters long.";
     case "auth/user-not-found":
     case "auth/wrong-password":
     case "auth/invalid-credential":
-      message = "Invalid email or password.";
-      break;
+      return "Invalid email or password. Please try again.";
     case "auth/popup-closed-by-user":
-      message = "The sign-in popup was closed before completing.";
-      break;
+      return "Google sign-in was cancelled.";
     default:
-      message = error.message;
+      return error.message || "An unexpected error occurred. Please try again.";
   }
-  alert(message);
-  console.error("Auth Error:", error.code, error.message);
 }
 
-function setupPasswordToggle() {
-  const togglePassword = document.querySelector("#togglePassword");
-  const passwordField = document.querySelector(".password-input");
+// ==================== PASSWORD TOGGLE ====================
 
-  if (togglePassword && passwordField) {
-    togglePassword.addEventListener("click", function () {
-      const type =
-        passwordField.getAttribute("type") === "password" ? "text" : "password";
-      passwordField.setAttribute("type", type);
-      togglePassword.classList.toggle("ph-eye-slash");
+function setupPasswordToggle() {
+  const forms = document.querySelectorAll("#login-form, #signup-form");
+
+  forms.forEach((form) => {
+    const toggleBtn = form.querySelector(".ph-eye, .ph-eye-slash");
+    const passwordInput = form.querySelector(".password-input");
+
+    if (!toggleBtn || !passwordInput) return;
+
+    toggleBtn.addEventListener("click", function () {
+      const isPassword = passwordInput.getAttribute("type") === "password";
+
+      passwordInput.setAttribute("type", isPassword ? "text" : "password");
+
+      if (isPassword) {
+        toggleBtn.classList.remove("ph-eye");
+        toggleBtn.classList.add("ph-eye-slash");
+      } else {
+        toggleBtn.classList.remove("ph-eye-slash");
+        toggleBtn.classList.add("ph-eye");
+      }
     });
-  }
+  });
+}
+
+// ==================== FORM VALIDATION ====================
+
+function setupFormValidation() {
+  const forms = document.querySelectorAll("#login-form, #signup-form");
+
+  forms.forEach((form) => {
+    const emailInput = form.querySelector('input[type="email"]');
+    const passwordInput = form.querySelector(".password-input");
+
+    if (emailInput) {
+      emailInput.addEventListener("input", () => {
+        if (emailInput.validity.typeMismatch) {
+          emailInput.setCustomValidity("Please enter a valid email address");
+        } else {
+          emailInput.setCustomValidity("");
+        }
+      });
+    }
+
+    if (passwordInput) {
+      passwordInput.addEventListener("input", () => {
+        if (passwordInput.value.length < 6) {
+          passwordInput.setCustomValidity(
+            "Password must be at least 6 characters",
+          );
+        } else {
+          passwordInput.setCustomValidity("");
+        }
+      });
+    }
+  });
 }

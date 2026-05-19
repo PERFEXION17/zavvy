@@ -16,16 +16,18 @@ import {
   setupMobileMenu,
 } from "./ui.js";
 
-// Feature Modules
 import { initAuthModule } from "./auth-controller.js";
+import { createToastContainer } from "./toast.js";
 
 // ==================== ENGINE INITIALIZATION ====================
+
 document.addEventListener("DOMContentLoaded", () => {
   // 1. Boot up Global UI Features
   initializeTheme();
   setupThemeToggle();
   setupMobileMenu();
   setupLogoutButtons();
+  createToastContainer();
 
   // 2. The Traffic Cop: Route specific modules based on current page
   const currentPath = window.location.pathname;
@@ -36,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==================== GLOBAL AUTH MANAGEMENT ===================
+
 onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("Zavvy! Engine - Current User:", user.email);
@@ -50,6 +53,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // ==================== GLOBAL LOGOUT LOGIC ====================
+
 function setupLogoutButtons() {
   const logoutButtons = document.querySelectorAll(".logout-btn");
 
