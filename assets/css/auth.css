@@ -55,17 +55,6 @@
   text-shadow: 0 4px 4px #6c3baa;
 }
 
-.auth-card input {
-  padding: var(--spacing-md);
-  width: 100%;
-  font-family: var(--font);
-  font-size: var(--font-size-ui);
-  outline: none;
-  border: none;
-  border-radius: var(--border-radius);
-  box-shadow: var(--in-shadow);
-}
-
 .password-container{
   position: relative;
   display: inline-block;
@@ -132,3 +121,30 @@
    box-shadow: 0 4px 8px #6b3baa !important;
 }
 
+@media (min-width: 601px) and (max-width: 1100px) {
+  .auth-bg{
+    background-position: 35%;
+  }
+
+  .auth-pad{
+    width: 80%;
+  }
+}
+
+@media (max-width: 600px){
+  .auth-bg{
+    display: none;
+  }
+
+  .auth-pad{
+    width: 100%;
+    background: url(/assets/img/auth-banner.webp);
+    background-position: 40%;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .auth-card{
+    padding: 0 var(--spacing-xl);
+  }
+}
