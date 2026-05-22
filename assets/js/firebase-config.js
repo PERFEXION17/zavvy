@@ -5,7 +5,7 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-// 2. Fix the version mismatch by aligning Analytics with 10.8.1
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
 
 const firebaseConfig = {
@@ -29,3 +29,7 @@ export const db = initializeFirestore(app, {
   }),
   experimentalForceLongPolling: true,
 });
+
+export const storage = getStorage(app);
+
+export { getAnalytics };
