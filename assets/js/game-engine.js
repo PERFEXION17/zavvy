@@ -1,7 +1,7 @@
 /**
  * game-engine.js - Zavvy! Gamification Core
  * Single Source of Truth for all XP, Sparks, Streaks & Quests
- * Phase 2 - Daily Quests System (Fixed)
+ * Phase 3 - Reward Distributor Added
  */
 
 import {
@@ -168,9 +168,6 @@ export function calculateNewStreak(
 
 // ==================== DAILY QUESTS SYSTEM ====================
 
-/**
- * Initialize or reset daily quests
- */
 export function initializeDailyQuests() {
   return {
     lastResetDate: getTodayDate(),
@@ -182,17 +179,11 @@ export function initializeDailyQuests() {
   };
 }
 
-/**
- * Check if quests need reset (new day)
- */
 export function shouldResetQuests(lastResetDate) {
   if (!lastResetDate) return true;
   return lastResetDate !== getTodayDate();
 }
 
-/**
- * Update progress on a quest - Accepts full dailyQuests object or just quests array
- */
 export function updateQuestProgress(dailyQuests, questType, incrementBy = 1) {
   const quests = Array.isArray(dailyQuests)
     ? dailyQuests
@@ -212,25 +203,84 @@ export function updateQuestProgress(dailyQuests, questType, incrementBy = 1) {
     return quest;
   });
 
-  // If input was full object, return updated full object
   if (!Array.isArray(dailyQuests) && dailyQuests.quests) {
-    return {
-      ...dailyQuests,
-      quests: updatedQuests,
-    };
+    return { ...dailyQuests, quests: updatedQuests };
   }
-
   return updatedQuests;
 }
 
-/**
- * Check if all quests are completed
- */
 export function areAllQuestsComplete(dailyQuests) {
   const quests = Array.isArray(dailyQuests)
     ? dailyQuests
     : dailyQuests.quests || [];
   return quests.every((q) => q.completed);
+}
+
+// ==================== CENTRAL REWARD DISTRIBUTOR (Phase 3) ====================
+
+/**
+ * MAIN FUNCTION - Call this from Sim, Neo, Synapse after any activity
+ */
+export async function awardActivityRewards(
+  userId,
+  activityType,
+  performanceScore = 0,
+) {
+  if (!userId) {
+    console.error("awardActivityRewards: Missing userId");
+    return null;
+  }
+
+  const userRef = doc(db, "users", userId);
+
+  try {
+    // 1. Get current user data
+    // (We'll improve this with getDoc in future, for now we simulate safe updates)
+
+    // 2. Calculate rewards
+    const xpEarned = calculateXPReward(activityType, performanceScore);
+    const currentStreak = 1; // Will be enhanced later
+    const sparksEarned = calculateSparksReward(
+      activityType,
+      performanceScore,
+      currentStreak,
+    );
+
+    // 3. Prepare updates
+    const updates = {
+      globalXP: increment(xpEarned),
+      sparks: increment(sparksEarned),
+      lastActiveDate: getTodayDate(),
+    };
+
+    // Add specific counters
+    if (activityType === "sim_complete") {
+      updates.zavvySimExamsTaken = increment(1);
+    } else if (activityType === "neo_lesson") {
+      updates.neoLessonsCompleted = increment(1);
+    } else if (activityType === "synapse_game") {
+      updates.synapseGamesPlayed = increment(1);
+    }
+
+    // 4. Apply Firestore update
+    await updateDoc(userRef, updates);
+
+    // 5. Log the activity
+    await logActivity(userId, activityType, xpEarned, sparksEarned);
+
+    console.log(
+      `🎉 Rewards Awarded → +${xpEarned} XP | +${sparksEarned} Sparks`,
+    );
+
+    return {
+      xpEarned,
+      sparksEarned,
+      activityType,
+    };
+  } catch (error) {
+    console.error("Failed to award rewards:", error);
+    return null;
+  }
 }
 
 // ==================== ACTIVITY LOGGING ====================
@@ -255,11 +305,9 @@ export async function logActivity(
   try {
     await updateDoc(userRef, {
       activityLog: arrayUnion(logEntry),
-      lastActiveDate: today,
     });
-    console.log(`✅ Activity logged: ${activityType}`);
-  } catch (error) {
-    console.error("Failed to log activity:", error);
+  } catch (e) {
+    console.error("Activity log failed:", e);
   }
 }
 
@@ -276,6 +324,7 @@ export const gameEngine = {
   shouldResetQuests,
   updateQuestProgress,
   areAllQuestsComplete,
+  awardActivityRewards, // ← The star of Phase 3
   logActivity,
   XP_CONFIG,
   SPARKS_CONFIG,
