@@ -1,7 +1,7 @@
 /**
  * game-engine.js - Zavvy! Gamification Core
  * Single Source of Truth for all XP, Sparks, Streaks & Quests
- * Phase 2 - Daily Quests System Added
+ * Phase 2 - Daily Quests System (Fixed)
  */
 
 import {
@@ -191,10 +191,14 @@ export function shouldResetQuests(lastResetDate) {
 }
 
 /**
- * Update progress on a specific quest
+ * Update progress on a quest - Accepts full dailyQuests object or just quests array
  */
-export function updateQuestProgress(quests, questType, incrementBy = 1) {
-  return quests.map((quest) => {
+export function updateQuestProgress(dailyQuests, questType, incrementBy = 1) {
+  const quests = Array.isArray(dailyQuests)
+    ? dailyQuests
+    : dailyQuests.quests || [];
+
+  const updatedQuests = quests.map((quest) => {
     if (quest.type === questType && !quest.completed) {
       const newProgress = quest.progress + incrementBy;
       const completed = newProgress >= quest.target;
@@ -207,12 +211,25 @@ export function updateQuestProgress(quests, questType, incrementBy = 1) {
     }
     return quest;
   });
+
+  // If input was full object, return updated full object
+  if (!Array.isArray(dailyQuests) && dailyQuests.quests) {
+    return {
+      ...dailyQuests,
+      quests: updatedQuests,
+    };
+  }
+
+  return updatedQuests;
 }
 
 /**
  * Check if all quests are completed
  */
-export function areAllQuestsComplete(quests) {
+export function areAllQuestsComplete(dailyQuests) {
+  const quests = Array.isArray(dailyQuests)
+    ? dailyQuests
+    : dailyQuests.quests || [];
   return quests.every((q) => q.completed);
 }
 
