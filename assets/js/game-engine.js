@@ -1,7 +1,7 @@
 /**
  * game-engine.js - Zavvy! Gamification Core
  * Single Source of Truth for all XP, Sparks, Streaks & Quests
- * Phase 0 - Foundation Layer
+ * Phase 1 - Core Utilities Complete
  */
 
 import {
@@ -9,6 +9,7 @@ import {
   updateDoc,
   increment,
   serverTimestamp,
+  arrayUnion,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { db } from "./firebase-config.js";
 
@@ -23,34 +24,8 @@ export const XP_CONFIG = {
 export const SPARKS_CONFIG = {
   EXAM_BASE: 25,
   QUEST_REWARD: 15,
+  STREAK_BONUS: 8, // Extra sparks per day on streak
 };
-
-export const QUEST_TEMPLATES = [
-  {
-    id: "quest_sim",
-    title: "Complete 1 Sim Exam",
-    type: "sim_complete",
-    target: 1,
-    rewardXP: 80,
-    rewardSparks: 15,
-  },
-  {
-    id: "quest_neo",
-    title: "Complete 3 Neo Lessons",
-    type: "neo_complete",
-    target: 3,
-    rewardXP: 60,
-    rewardSparks: 10,
-  },
-  {
-    id: "quest_synapse",
-    title: "Play 5 Synapse Games",
-    type: "synapse_play",
-    target: 5,
-    rewardXP: 50,
-    rewardSparks: 12,
-  },
-];
 
 // ==================== DATE HELPERS ====================
 
@@ -87,28 +62,130 @@ export function calculateLevel(totalXP) {
 }
 
 export function calculateXPReward(activityType, performanceScore = 0) {
+  let baseXP = 0;
+
   switch (activityType) {
     case "sim_complete":
-      return Math.floor(performanceScore * 0.65);
+      baseXP = Math.floor(performanceScore * 0.65);
+      break;
     case "neo_lesson":
-      return 25;
+      baseXP = 25;
+      break;
     case "synapse_game":
-      return Math.floor(performanceScore * 0.8) + 10;
+      baseXP = Math.floor(performanceScore * 0.8) + 10;
+      break;
     case "daily_quest":
-      return 50;
+      baseXP = 50;
+      break;
     default:
-      return 20;
+      baseXP = 20;
+  }
+
+  return Math.min(baseXP, 450); // Hard cap per activity
+}
+
+// ==================== SPARKS SYSTEM ====================
+
+export function calculateSparksReward(
+  activityType,
+  performanceScore = 0,
+  currentStreak = 1,
+) {
+  let baseSparks = 0;
+
+  switch (activityType) {
+    case "sim_complete":
+      baseSparks = SPARKS_CONFIG.EXAM_BASE + Math.floor(performanceScore / 20);
+      break;
+    case "neo_lesson":
+      baseSparks = 8;
+      break;
+    case "synapse_game":
+      baseSparks = 6 + Math.floor(performanceScore / 30);
+      break;
+    case "daily_quest":
+      baseSparks = SPARKS_CONFIG.QUEST_REWARD;
+      break;
+    default:
+      baseSparks = 5;
+  }
+
+  // Streak bonus
+  const streakBonus =
+    Math.floor(currentStreak / 3) * SPARKS_CONFIG.STREAK_BONUS;
+  return Math.min(baseSparks + streakBonus, 60); // Cap sparks per activity
+}
+
+// ==================== STREAK LOGIC ====================
+
+export function calculateNewStreak(
+  currentStreak,
+  highestStreak,
+  lastActiveDate,
+) {
+  const today = getTodayDate();
+
+  if (!lastActiveDate) {
+    return { currentStreak: 1, highestStreak: 1 };
+  }
+
+  if (lastActiveDate === today) {
+    return { currentStreak, highestStreak }; // Already active today
+  }
+
+  if (isYesterday(lastActiveDate)) {
+    const newStreak = currentStreak + 1;
+    return {
+      currentStreak: newStreak,
+      highestStreak: Math.max(newStreak, highestStreak),
+    };
+  }
+
+  // Streak broken
+  return { currentStreak: 1, highestStreak };
+}
+
+// ==================== ACTIVITY LOGGING ====================
+
+export async function logActivity(
+  userId,
+  activityType,
+  xpEarned,
+  sparksEarned,
+) {
+  const today = getTodayDate();
+  const userRef = doc(db, "users", userId);
+
+  const logEntry = {
+    date: today,
+    activity: activityType,
+    xp: xpEarned,
+    sparks: sparksEarned,
+    timestamp: serverTimestamp(),
+  };
+
+  try {
+    await updateDoc(userRef, {
+      activityLog: arrayUnion(logEntry),
+      lastActiveDate: today,
+    });
+    console.log(`✅ Activity logged: ${activityType}`);
+  } catch (error) {
+    console.error("Failed to log activity:", error);
   }
 }
 
-// ==================== ENGINE EXPORT ====================
+// ==================== MAIN ENGINE EXPORT ====================
 
 export const gameEngine = {
   getTodayDate,
   isYesterday,
   calculateLevel,
   calculateXPReward,
+  calculateSparksReward,
+  calculateNewStreak,
+  logActivity,
   XP_CONFIG,
   SPARKS_CONFIG,
-  QUEST_TEMPLATES,
+  QUEST_TEMPLATES: [], // Will be populated in Phase 2
 };
