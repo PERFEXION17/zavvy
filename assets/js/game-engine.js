@@ -1,7 +1,7 @@
 /**
  * game-engine.js - Zavvy! Gamification Core
  * Single Source of Truth for all XP, Sparks, Streaks & Quests
- * Phase 3 - Reward Distributor Added
+ * Phase 3 - Reward Distributor (Fixed)
  */
 
 import {
@@ -216,11 +216,8 @@ export function areAllQuestsComplete(dailyQuests) {
   return quests.every((q) => q.completed);
 }
 
-// ==================== CENTRAL REWARD DISTRIBUTOR (Phase 3) ====================
+// ==================== CENTRAL REWARD DISTRIBUTOR ====================
 
-/**
- * MAIN FUNCTION - Call this from Sim, Neo, Synapse after any activity
- */
 export async function awardActivityRewards(
   userId,
   activityType,
@@ -234,26 +231,21 @@ export async function awardActivityRewards(
   const userRef = doc(db, "users", userId);
 
   try {
-    // 1. Get current user data
-    // (We'll improve this with getDoc in future, for now we simulate safe updates)
-
-    // 2. Calculate rewards
     const xpEarned = calculateXPReward(activityType, performanceScore);
-    const currentStreak = 1; // Will be enhanced later
+    const currentStreak = 1; // Enhanced in later phases
     const sparksEarned = calculateSparksReward(
       activityType,
       performanceScore,
       currentStreak,
     );
 
-    // 3. Prepare updates
     const updates = {
       globalXP: increment(xpEarned),
       sparks: increment(sparksEarned),
       lastActiveDate: getTodayDate(),
     };
 
-    // Add specific counters
+    // Activity-specific counters
     if (activityType === "sim_complete") {
       updates.zavvySimExamsTaken = increment(1);
     } else if (activityType === "neo_lesson") {
@@ -262,28 +254,24 @@ export async function awardActivityRewards(
       updates.synapseGamesPlayed = increment(1);
     }
 
-    // 4. Apply Firestore update
+    // Apply main updates
     await updateDoc(userRef, updates);
 
-    // 5. Log the activity
+    // Log activity (using client timestamp)
     await logActivity(userId, activityType, xpEarned, sparksEarned);
 
     console.log(
-      `🎉 Rewards Awarded → +${xpEarned} XP | +${sparksEarned} Sparks`,
+      `Rewards Awarded → +${xpEarned} XP | +${sparksEarned} Sparks`,
     );
 
-    return {
-      xpEarned,
-      sparksEarned,
-      activityType,
-    };
+    return { xpEarned, sparksEarned, activityType };
   } catch (error) {
     console.error("Failed to award rewards:", error);
     return null;
   }
 }
 
-// ==================== ACTIVITY LOGGING ====================
+// ==================== ACTIVITY LOGGING (Fixed) ====================
 
 export async function logActivity(
   userId,
@@ -291,23 +279,23 @@ export async function logActivity(
   xpEarned,
   sparksEarned,
 ) {
-  const today = getTodayDate();
   const userRef = doc(db, "users", userId);
 
   const logEntry = {
-    date: today,
+    date: getTodayDate(),
     activity: activityType,
     xp: xpEarned,
     sparks: sparksEarned,
-    timestamp: serverTimestamp(),
+    timestamp: new Date().toISOString(), // ← Fixed: Using client timestamp
   };
 
   try {
     await updateDoc(userRef, {
       activityLog: arrayUnion(logEntry),
     });
-  } catch (e) {
-    console.error("Activity log failed:", e);
+    console.log(`Activity logged: ${activityType}`);
+  } catch (error) {
+    console.error("Activity log failed:", error);
   }
 }
 
@@ -324,7 +312,7 @@ export const gameEngine = {
   shouldResetQuests,
   updateQuestProgress,
   areAllQuestsComplete,
-  awardActivityRewards, // ← The star of Phase 3
+  awardActivityRewards,
   logActivity,
   XP_CONFIG,
   SPARKS_CONFIG,
