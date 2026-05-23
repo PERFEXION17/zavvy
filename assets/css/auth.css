@@ -6,7 +6,7 @@
   align-items: center;
 }
 
-.auth-bg{
+.auth-bg {
   width: 60%;
   height: 100%;
   background-image: url(/assets/img/auth-banner.webp);
@@ -15,12 +15,12 @@
   background-size: cover;
 }
 
-.auth-logo{
+.auth-logo {
   padding: var(--spacing-md);
   width: 150px !important;
 }
 
-.auth-pad{
+.auth-pad {
   width: 40%;
   height: 100%;
   display: flex;
@@ -30,11 +30,12 @@
   background: #000010;
 }
 
-.auth-pad section{
+.auth-pad section {
   width: 100%;
 }
 
 .auth-card {
+  margin: 0 auto;
   padding: 0 var(--spacing-xxl);
   width: 100%;
   max-width: 500px;
@@ -55,7 +56,7 @@
   text-shadow: 0 4px 4px #6c3baa;
 }
 
-.password-container{
+.password-container {
   position: relative;
   display: inline-block;
 }
@@ -72,6 +73,7 @@
 
 #login-form,
 #signup-form {
+  padding: var(--spacing-xs);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -80,16 +82,19 @@
   gap: var(--spacing-md);
 }
 
-#login-form p, #signup-form p{
+#login-form p,
+#signup-form p {
   color: #eee;
 }
 
-#login-form a, #signup-form a{
+#login-form a,
+#signup-form a {
   margin-left: var(--spacing-xs);
   color: var(--accent-color-2);
 }
 
-#login-form a:hover, #signup-form a:hover{
+#login-form a:hover,
+#signup-form a:hover {
   color: #eee;
   text-decoration: underline;
 }
@@ -98,45 +103,45 @@
   width: 100%;
 }
 
-.auth-btn-con{
+.auth-btn-con {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: var(--spacing-md);
 }
 
-.auth-btn{
-  background-color: var(--primary-color) !important;
- color: var(--neutral) !important;
- border: 2px solid var(--accent-color);
+.auth-btn {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  border: 2px solid var(--accent-color);
 }
 
-.auth-btn i{
+.auth-btn i {
   font-size: 1.2rem;
 }
 
 .auth-btn:hover {
-  background-color: var(--bg-color) !important;
-  color: var(--text-color) !important;
-   box-shadow: 0 4px 8px #6b3baa !important;
+  background-color: var(--primary-color) !important;
+  color: var(--neutral) !important;
+  box-shadow: 0 4px 8px #6b3baa !important;
 }
 
 @media (min-width: 601px) and (max-width: 1100px) {
-  .auth-bg{
+  .auth-bg {
     background-position: 35%;
   }
 
-  .auth-pad{
+  .auth-pad {
     width: 80%;
   }
 }
 
-@media (max-width: 600px){
-  .auth-bg{
+@media (max-width: 600px) {
+  .auth-bg {
     display: none;
   }
 
-  .auth-pad{
+  .auth-pad {
     width: 100%;
     background: url(/assets/img/auth-banner.webp);
     background-position: 40%;
@@ -144,7 +149,7 @@
     background-size: cover;
   }
 
-  .auth-card{
+  .auth-card {
     padding: 0 var(--spacing-xl);
   }
 }
