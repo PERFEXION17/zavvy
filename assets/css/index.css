@@ -12,7 +12,6 @@ nav {
   align-items: center;
   background: var(--bg-color);
   color: var(--text-color);
-  transition: var(--transition);
 }
 
 .logo {
@@ -24,60 +23,6 @@ nav {
   font-family: var(--font-main);
   font-size: var(--font-size-ui);
   font-weight: var(--font-weight-thin);
-}
-
-.links {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.links a {
-  position: relative;
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-.links a::before {
-  content: "";
-  position: absolute;
-  bottom: -0.2rem;
-  left: 0;
-  width: 0;
-  height: 0.15rem;
-  background-color: var(--accent-color);
-  transition: var(--transition);
-}
-
-.links a:hover::before {
-  width: 100%;
-}
-
-.links-drop {
-  position: relative;
-  z-index: 1;
-}
-
-.drop-links {
-  position: absolute;
-  top: 1.5rem;
-  padding: var(--spacing-xs) var(--spacing-md);
-  visibility: hidden;
-  opacity: 0;
-  background-color: var(--bg-color);
-  border-radius: var(--border-radius);
-  transition: var(--transition);
-  z-index: 0;
-}
-
-.drop-links li {
-  margin-bottom: var(--spacing-xs);
-}
-
-.links-drop:hover .drop-links {
-  top: 2rem;
-  visibility: visible;
-  opacity: 1;
 }
 
 .utilities {
@@ -101,22 +46,6 @@ nav {
   border-radius: 50%;
   border: 2px solid #6c3baa;
   overflow: hidden;
-}
-
-.menu-toggle {
-  display: none;
-}
-
-.theme-toggle {
-  background: transparent;
-  color: var(--text-color);
-  font-size: 24px;
-  border: none;
-  cursor: pointer;
-}
-
-.mob-menu {
-  display: none;
 }
 
 .hero-container {
@@ -168,7 +97,6 @@ nav {
   overflow: hidden;
   border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
   box-shadow: inset 0 5px 20px #6b3baa40;
-  transition: var(--transition);
 }
 
 .hero-img-wrap:hover {
@@ -200,7 +128,6 @@ nav {
   top: -3.5rem;
   font-size: 4rem;
   text-shadow: 0 5px 5px #6c3baa95;
-  transition: var(--transition);
   z-index: 10;
 }
 
@@ -210,7 +137,6 @@ nav {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: var(--transition);
   cursor: pointer;
 }
 
@@ -223,7 +149,6 @@ nav {
   background-color: var(--bg-color);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  transition: var(--transition);
 }
 
 .bullet-card h3 {
@@ -271,7 +196,6 @@ nav {
   border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
   box-shadow: inset 0 5px 20px #6b3baa40;
   overflow: hidden;
-  transition: var(--transition);
 }
 
 .exam-img-wrap:hover {
@@ -311,7 +235,6 @@ nav {
 .exam-btn {
   background-color: var(--text-color);
   color: var(--neutral);
-  transition: var(--transition);
 }
 
 .exam-btn:hover {
@@ -359,42 +282,7 @@ nav {
   text-shadow: var(--text-shadow);
 }
 
-.index-theme {
-  position: fixed !important;
-  bottom: var(--spacing-xs);
-  right: var(--spacing-xs);
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--bg-color) !important;
-  border-radius: 50% !important;
-  box-shadow: var(--shadow);
-}
-
-.index-theme circle {
-  fill: transparent;
-  stroke: #6c3baa50;
-  stroke-width: 2px;
-  stroke-dasharray: 120;
-  stroke-dashoffset: 120;
-  transform: rotate(-90deg);
-  transform-origin: center;
-  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.index-theme:hover circle {
-  stroke-dashoffset: 0;
-}
-
-.index-theme:focus {
-  outline: 2px solid #6c3baa50;
-  outline-offset: 4px;
-  border-radius: 50% !important; /* Forces the browser focus ring to be circular */
-}
-
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .hero-text h1 {
     font-size: 2rem;
   }
@@ -424,36 +312,6 @@ nav {
 
   .link-wrap-desk {
     display: none;
-  }
-
-  .mob-menu {
-    position: fixed;
-    top: 0;
-    right: 0;
-    padding: var(--spacing-xl) var(--spacing-xl);
-    height: 100dvh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: var(--spacing-md);
-    background-color: var(--bg-color);
-    transform: translateX(100%);
-    transition: var(--transition);
-    z-index: 999;
-  }
-
-  .mob-menu.open {
-    transform: translateX(0);
-  }
-
-  .mob-menu a {
-    color: var(--text-color);
-  }
-
-  .mob-menu .utilities {
-    margin-top: var(--spacing-xl);
   }
 
   .menu-close {
