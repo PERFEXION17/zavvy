@@ -32,7 +32,7 @@ export const SPARKS_CONFIG = {
 export const HEART_CONFIG = {
   MAX_HEARTS: 5,
   REFILL_COST_SPARKS: 50,
-  REGEN_TIME_MS: 4 * 60 * 60 * 1000, // 4 hours in milliseconds
+  REGEN_TIME_MS: 4 * 60 * 60 * 1000,
 };
 
 // ==================== QUEST TEMPLATES ====================
@@ -70,14 +70,13 @@ export const QUEST_TEMPLATES = [
 // ==================== DATE & TIME HELPERS ====================
 
 export function getTodayDate() {
-  // BUG FIX: Strictly enforce West Africa Time (WAT) securely
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Lagos",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
-  return formatter.format(new Date()); // Always returns YYYY-MM-DD reliably
+  return formatter.format(new Date());
 }
 
 export function isYesterday(dateStr) {
@@ -309,13 +308,23 @@ export async function awardActivityRewards(
 
     const userData = userSnap.data();
     const currentStreak = userData.currentStreak || 1;
+    const highestStreak = userData.highestStreak || 1;
+    const lastActiveDate = userData.lastActiveDate || "";
+
+    // ==================== STREAK SYSTEM INTEGRATION ====================
+    const streakResult = calculateNewStreak(
+      currentStreak,
+      highestStreak,
+      lastActiveDate,
+    );
+    // =================================================================
 
     // Calculate dynamic rewards based on real streak
     const xpEarned = calculateXPReward(activityType, performanceScore);
     const sparksEarned = calculateSparksReward(
       activityType,
       performanceScore,
-      currentStreak,
+      streakResult.currentStreak, // Use updated streak
     );
 
     // BUG FIX: Atomic Batched Writes to prevent network race conditions
@@ -325,6 +334,8 @@ export async function awardActivityRewards(
       globalXP: increment(xpEarned),
       sparks: increment(sparksEarned),
       lastActiveDate: getTodayDate(),
+      currentStreak: streakResult.currentStreak, // ← Added
+      highestStreak: streakResult.highestStreak, // ← Added
     };
 
     if (activityType === "sim_complete")
@@ -343,13 +354,22 @@ export async function awardActivityRewards(
       activity: activityType,
       xp: xpEarned,
       sparks: sparksEarned,
-      timestamp: serverTimestamp(), // BUG FIX: Stops client spoofing
+      timestamp: serverTimestamp(),
     });
 
     // Execute the unified transaction
     await batch.commit();
 
-    return { xpEarned, sparksEarned, activityType };
+    console.log(
+      `🎉 Rewards Awarded → +${xpEarned} XP | +${sparksEarned} Sparks | Streak: ${streakResult.currentStreak}`,
+    );
+
+    return {
+      xpEarned,
+      sparksEarned,
+      activityType,
+      currentStreak: streakResult.currentStreak,
+    };
   } catch (error) {
     console.error("Failed to award rewards:", error);
     return null;
@@ -366,7 +386,6 @@ export async function logActivity(
 ) {
   if (!userId) return;
 
-  // Uses subcollection instead of arrayUnion to protect 1MB document cap
   const logsRef = collection(db, "users", userId, "activity_logs");
 
   try {
@@ -375,7 +394,7 @@ export async function logActivity(
       activity: activityType,
       xp: xpEarned,
       sparks: sparksEarned,
-      timestamp: serverTimestamp(), // Server dictates real time
+      timestamp: serverTimestamp(),
     });
   } catch (error) {
     console.error("Activity log failed:", error);
