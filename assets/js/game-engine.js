@@ -1,15 +1,17 @@
 /**
  * game-engine.js - Zavvy! Gamification Core
  * Single Source of Truth for all XP, Sparks, Streaks, Quests & Health
- * Phase 3 - Reward & Health Distributor
  */
 
 import {
   doc,
+  getDoc,
   updateDoc,
   increment,
   serverTimestamp,
-  arrayUnion,
+  collection,
+  writeBatch,
+  addDoc,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { db } from "./firebase-config.js";
 
@@ -27,7 +29,6 @@ export const SPARKS_CONFIG = {
   STREAK_BONUS: 8,
 };
 
-// NEW: The Health Economy Rules
 export const HEART_CONFIG = {
   MAX_HEARTS: 5,
   REFILL_COST_SPARKS: 50,
@@ -69,9 +70,14 @@ export const QUEST_TEMPLATES = [
 // ==================== DATE & TIME HELPERS ====================
 
 export function getTodayDate() {
-  const now = new Date();
-  now.setHours(now.getHours() + 1); // WAT (UTC+1)
-  return now.toISOString().split("T")[0];
+  // BUG FIX: Strictly enforce West Africa Time (WAT) securely
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Lagos",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(new Date()); // Always returns YYYY-MM-DD reliably
 }
 
 export function isYesterday(dateStr) {
@@ -84,10 +90,6 @@ export function isYesterday(dateStr) {
 
 // ==================== HEALTH (HEART) SYSTEM ====================
 
-/**
- * Calculates if the user is owed any hearts based on the 4-hour window.
- * This is a pure function.
- */
 export function calculateHeartRegen(currentHearts, lastHeartUpdateIso) {
   if (currentHearts >= HEART_CONFIG.MAX_HEARTS || !lastHeartUpdateIso) {
     return {
@@ -107,7 +109,6 @@ export function calculateHeartRegen(currentHearts, lastHeartUpdateIso) {
       currentHearts + heartsToGive,
     );
 
-    // Calculate exact remainder time to carry over so they don't lose progress
     const remainderMs = timePassedMs % HEART_CONFIG.REGEN_TIME_MS;
     const newLastUpdate = new Date(now.getTime() - remainderMs).toISOString();
 
@@ -121,16 +122,12 @@ export function calculateHeartRegen(currentHearts, lastHeartUpdateIso) {
   };
 }
 
-/**
- * Deducts 1 heart. If they were at MAX, starts the 4-hour timer.
- */
 export async function deductHeart(userId, currentHearts) {
   if (!userId || currentHearts <= 0) return false;
 
   const userRef = doc(db, "users", userId);
   const updates = { hearts: increment(-1) };
 
-  // Start the timer ONLY when dropping from Max Hearts
   if (currentHearts === HEART_CONFIG.MAX_HEARTS) {
     updates.lastHeartUpdate = new Date().toISOString();
   }
@@ -144,9 +141,6 @@ export async function deductHeart(userId, currentHearts) {
   }
 }
 
-/**
- * Spends Sparks to fully restore hearts instantly.
- */
 export async function refillHeartsWithSparks(userId, currentSparks) {
   if (!userId) return false;
   if (currentSparks < HEART_CONFIG.REFILL_COST_SPARKS) {
@@ -158,7 +152,7 @@ export async function refillHeartsWithSparks(userId, currentSparks) {
     await updateDoc(userRef, {
       hearts: HEART_CONFIG.MAX_HEARTS,
       sparks: increment(-HEART_CONFIG.REFILL_COST_SPARKS),
-      lastHeartUpdate: new Date().toISOString(), // Reset timer
+      lastHeartUpdate: new Date().toISOString(),
     });
     return { success: true };
   } catch (error) {
@@ -309,29 +303,51 @@ export async function awardActivityRewards(
   const userRef = doc(db, "users", userId);
 
   try {
+    // BUG FIX: State Hydration. Fetch real user data to determine streak.
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return null;
+
+    const userData = userSnap.data();
+    const currentStreak = userData.currentStreak || 1;
+
+    // Calculate dynamic rewards based on real streak
     const xpEarned = calculateXPReward(activityType, performanceScore);
-    const currentStreak = 1; // Enhanced in later phases
     const sparksEarned = calculateSparksReward(
       activityType,
       performanceScore,
       currentStreak,
     );
 
-    const updates = {
+    // BUG FIX: Atomic Batched Writes to prevent network race conditions
+    const batch = writeBatch(db);
+
+    const profileUpdates = {
       globalXP: increment(xpEarned),
       sparks: increment(sparksEarned),
       lastActiveDate: getTodayDate(),
     };
 
     if (activityType === "sim_complete")
-      updates.zavvySimExamsTaken = increment(1);
+      profileUpdates.zavvySimExamsTaken = increment(1);
     else if (activityType === "neo_lesson")
-      updates.neoLessonsCompleted = increment(1);
+      profileUpdates.neoLessonsCompleted = increment(1);
     else if (activityType === "synapse_game")
-      updates.synapseGamesPlayed = increment(1);
+      profileUpdates.synapseGamesPlayed = increment(1);
 
-    await updateDoc(userRef, updates);
-    await logActivity(userId, activityType, xpEarned, sparksEarned);
+    batch.update(userRef, profileUpdates);
+
+    // BUG FIX: Subcollection routing to evade the 1MB document limit
+    const logsRef = doc(collection(userRef, "activity_logs"));
+    batch.set(logsRef, {
+      date: getTodayDate(),
+      activity: activityType,
+      xp: xpEarned,
+      sparks: sparksEarned,
+      timestamp: serverTimestamp(), // BUG FIX: Stops client spoofing
+    });
+
+    // Execute the unified transaction
+    await batch.commit();
 
     return { xpEarned, sparksEarned, activityType };
   } catch (error) {
@@ -340,7 +356,7 @@ export async function awardActivityRewards(
   }
 }
 
-// ==================== ACTIVITY LOGGING ====================
+// ==================== ACTIVITY LOGGING (Standalone) ====================
 
 export async function logActivity(
   userId,
@@ -348,17 +364,19 @@ export async function logActivity(
   xpEarned,
   sparksEarned,
 ) {
-  const userRef = doc(db, "users", userId);
-  const logEntry = {
-    date: getTodayDate(),
-    activity: activityType,
-    xp: xpEarned,
-    sparks: sparksEarned,
-    timestamp: new Date().toISOString(),
-  };
+  if (!userId) return;
+
+  // Uses subcollection instead of arrayUnion to protect 1MB document cap
+  const logsRef = collection(db, "users", userId, "activity_logs");
 
   try {
-    await updateDoc(userRef, { activityLog: arrayUnion(logEntry) });
+    await addDoc(logsRef, {
+      date: getTodayDate(),
+      activity: activityType,
+      xp: xpEarned,
+      sparks: sparksEarned,
+      timestamp: serverTimestamp(), // Server dictates real time
+    });
   } catch (error) {
     console.error("Activity log failed:", error);
   }
