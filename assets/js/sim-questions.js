@@ -1,4 +1,4 @@
-export const jambQuestions = {
+export const simQuestions = {
   english: [
     {
       q: "The minister's statement was considered <b>inflammatory</b>. Nearest in meaning",
