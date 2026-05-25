@@ -160,18 +160,30 @@ export async function refillHeartsWithSparks(userId, currentSparks) {
   }
 }
 
-// ==================== XP & LEVEL SYSTEM ====================
+// ==================== XP & LEVEL SYSTEM (FIXED) ====================
 
 export function calculateLevel(totalXP) {
   let level = 1;
-  let xpNeeded = XP_CONFIG.LEVEL_BASE;
+  let xpForNextLevel = XP_CONFIG.LEVEL_BASE; // e.g., 500
+  let xpAccumulated = 0; // Total XP required to reach the CURRENT level
 
-  while (totalXP >= xpNeeded) {
+  // Accumulate thresholds correctly
+  while (totalXP >= xpAccumulated + xpForNextLevel) {
     level++;
-    xpNeeded = Math.floor(xpNeeded * XP_CONFIG.LEVEL_MULTIPLIER);
+    xpAccumulated += xpForNextLevel;
+    xpForNextLevel = Math.floor(xpForNextLevel * XP_CONFIG.LEVEL_MULTIPLIER);
   }
 
-  return { level, xpToNextLevel: xpNeeded - totalXP, totalXP };
+  // Calculate exact progress within the current level
+  const xpIntoCurrentLevel = totalXP - xpAccumulated;
+  const progressPercentage = Math.floor((xpIntoCurrentLevel / xpForNextLevel) * 100);
+
+  return { 
+    level, 
+    xpToNextLevel: xpForNextLevel - xpIntoCurrentLevel, 
+    progress: progressPercentage,
+    totalXP 
+  };
 }
 
 export function calculateXPReward(activityType, performanceScore = 0) {
@@ -242,6 +254,20 @@ export function calculateNewStreak(
     };
   }
   return { currentStreak: 1, highestStreak };
+}
+
+// ==================== STREAK DISPLAY HYDRATOR (NEW) ====================
+
+export function getDisplayStreak(currentStreak, lastActiveDate) {
+  const today = getTodayDate();
+  if (!lastActiveDate) return 0;
+  if (lastActiveDate === today) return currentStreak;
+  
+  // If they were active yesterday, their streak is still alive waiting for today's activity
+  if (isYesterday(lastActiveDate)) return currentStreak; 
+  
+  // If it's been 2+ days, the streak is visually dead until they start a new one
+  return 0; 
 }
 
 // ==================== DAILY QUESTS SYSTEM ====================
@@ -419,6 +445,7 @@ export const gameEngine = {
   calculateHeartRegen,
   deductHeart,
   refillHeartsWithSparks,
+  getDisplayStreak,
   XP_CONFIG,
   SPARKS_CONFIG,
   HEART_CONFIG,
