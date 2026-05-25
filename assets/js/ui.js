@@ -40,6 +40,7 @@ export function setupThemeToggle() {
   const themeBtn = document.getElementById("theme-toggle");
   if (themeBtn) {
     themeBtn.addEventListener("click", () => {
+      console.log('clicked')
       document.body.classList.toggle("darkmode");
       const theme = document.body.classList.contains("darkmode")
         ? "dark"

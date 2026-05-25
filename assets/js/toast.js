@@ -58,7 +58,7 @@ export function showToast(message, type = "info", duration = 5000) {
   const current = styles[type] || styles.info;
 
   toast.innerHTML = `
-    <i class="ph-thin ${current.icon}" 
+    <i class="ph ${current.icon}" 
        style="font-size: 1.2rem; color: ${current.color}; flex-shrink: 0;">
     </i>
     <span style="flex: 1; line-height: 1.4; color: ${current.color};">${message}</span>
