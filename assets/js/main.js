@@ -1,71 +1,47 @@
 /**
  * main.js - The Central Ecosystem Engine
- * Acts as the Traffic Cop for the Zavvy! ecosystem.
+ * Acts as the Traffic Cop for the entire Zavvy! platform.
  */
 
-import { auth } from "./firebase-config.js";
-import {
-  onAuthStateChanged,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import {
-  updateUI,
-  removeLoadingScreen,
-  initializeTheme,
-  setupThemeToggle,
-  setupMobileMenu,
-} from "./ui.js";
-
-import { initAuthModule } from "./auth-controller.js";
+import { initializeTheme, setupThemeToggle, setupMobileMenu } from "./ui.js";
+import { initAuthModule } from "./auth.js";
 import { createToastContainer } from "./toast.js";
+import { initPortal } from "./portal.js";
+import { initAuthGuard, setupLogoutButtons } from "./auth-guard.js";
 
 // ==================== ENGINE INITIALIZATION ====================
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Boot up Global UI Features
   initializeTheme();
   setupThemeToggle();
   setupMobileMenu();
-  setupLogoutButtons();
   createToastContainer();
 
-  // 2. The Traffic Cop: Route specific modules based on current page
+  setupLogoutButtons();
+  initAuthGuard(); 
+
+  document.addEventListener("zavvyProfileUpdated", (e) => {
+    const { photoURL, firstName } = e.detail;
+    const headerName = document.getElementById("header-user-name");
+    const headerImg = document.querySelector(".dash-prof .profile");
+
+    if (headerName && firstName) headerName.textContent = firstName;
+    if (headerImg && photoURL) headerImg.src = photoURL;
+  });
+
   const currentPath = window.location.pathname;
 
   if (currentPath.includes("auth.html") || currentPath.includes("auth")) {
-    initAuthModule(); // Only runs if the user is on the auth page!
-  }
-});
-
-// ==================== GLOBAL AUTH MANAGEMENT ===================
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("Zavvy! Engine - Current User:", user.email);
-    updateUI(true);
+    initAuthModule();
+  } else if (
+    currentPath === "/" ||
+    currentPath.includes("index.html") ||
+    currentPath === ""
+  ) {
+    console.log("🏠 Landing page (index.html)");
   } else {
-    console.log("Zavvy! Engine - No user logged in.");
-    updateUI(false);
+    console.log("🚀 Initializing Zavvy Portal...");
+    initPortal();
   }
-
-  // Clear the loading screen once state is verified
-  removeLoadingScreen();
 });
 
-// ==================== GLOBAL LOGOUT LOGIC ====================
-
-function setupLogoutButtons() {
-  const logoutButtons = document.querySelectorAll(".logout-btn");
-
-  logoutButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      signOut(auth)
-        .then(() => {
-          window.location.href = "index.html"; // Route back to landing
-        })
-        .catch((error) => {
-          console.error("Logout Error:", error);
-        });
-    });
-  });
-}
