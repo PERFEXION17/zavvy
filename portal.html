@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home | Zavvy!</title>
+    <link rel="stylesheet" href="/assets/css/main.css" />
+    <link rel="shortcut icon" href="/assets/img/Z!.webp" type="image/x-icon" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/thin/style.css"
+    />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8054586171745918"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div id="loading-screen" class="loading-overlay">
+      <div class="loading-img">
+        <img src="/assets/img/Z!.webp" alt="loading img" />
+      </div>
+    </div>
+
+    <div class="portal-wrapper">
+      <!-- SIDEBAR -->
+      <aside class="dash-sidebar" id="sidebar">
+        <div class="dash-top">
+          <div class="logo">
+            <a href="/home"
+              ><img src="/assets/img/zavvy!.webp" alt="zavvy logo"
+            /></a>
+          </div>
+
+          <nav class="sidebar-links" id="sidebar-nav">
+            <!-- Populated by JS -->
+          </nav>
+        </div>
+
+        <div class="sidebar-footer">
+          <button class="logout-btn btn-trace" id="sidebar-logout">
+            <span class="icon"><i class="ph ph-sign-out"></i></span>
+            <span class="pad-dash-text">Log Out</span>
+            <svg aria-hidden="true" focusable="false">
+              <rect
+                x="0"
+                y="0"
+                rx="5"
+                ry="5"
+                fill="none"
+                width="100%"
+                height="100%"
+              ></rect>
+            </svg>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT AREA -->
+      <div class="dash-content-area" id="main-content">
+        <!-- Dynamic content loaded here -->
+        <header class="dash-top-bar">
+          <div class="dash-top-wrap">
+            <div class="user-status-widget">
+              <div class="widget-wrap">
+                <img
+                  src="/assets/img/icons/xp-icon.webp"
+                  alt="xp"
+                  class="widget-icon"
+                />
+                <span id="header-xp">1</span>
+              </div>
+              <div class="widget-wrap">
+                <img
+                  src="/assets/img/icons/flame-icon.webp"
+                  alt="Streak"
+                  class="widget-icon"
+                />
+                <span id="header-streak">1</span>
+              </div>
+              <div class="widget-wrap">
+                <img
+                  src="/assets/img/icons/spark-icon.webp"
+                  alt="Sparks"
+                  class="widget-icon"
+                />
+                <span id="header-sparks">0</span>
+              </div>
+              <div class="widget-wrap">
+                <img
+                  src="/assets/img/icons/heart-icon.webp"
+                  alt="Hearts/XP"
+                  class="widget-icon"
+                />
+                <span id="header-hearts">0</span>
+              </div>
+              <div class="dash-prof">
+                <img
+                  id="header-profile-img"
+                  class="profile"
+                  src="/assets/img/avatar.webp"
+                  alt="Profile"
+                />
+                <div class="prof-text">
+                  <span id="header-user-name">Champion</span>
+                  <span id="header-user-level">Level 1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main id="content-viewport">
+          <!-- Section content injected here -->
+        </main>
+      </div>
+    </div>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mob-dash" id="mobile-bottom-nav">
+      <!-- Populated by JS -->
+    </nav>
+
+
+    <script type="module" src="/assets/js/main.js"></script>
+  </body>
+</html>
