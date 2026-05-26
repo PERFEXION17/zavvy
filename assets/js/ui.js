@@ -3,6 +3,13 @@
  * STRICTLY for global elements that exist across the entire ecosystem.
  */
 
+import {
+  doc,
+  getDoc,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { auth, db } from "./firebase-config.js";
+
 export function updateUI(isLoggedIn) {
   const loginButtons = document.querySelectorAll(".login-btn");
   const signupButtons = document.querySelectorAll(".signup-btn");
@@ -29,26 +36,63 @@ export function removeLoadingScreen() {
   }
 }
 
-export function initializeTheme() {
-  const currentTheme = localStorage.getItem("theme");
-  if (currentTheme === "dark") {
-    document.body.classList.add("darkmode");
+// ==================== THEME SYSTEM ====================
+
+export async function initializeTheme() {
+  const user = auth.currentUser;
+  let userTheme = "system";
+
+  if (user) {
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        userTheme = userDoc.data().theme || "system";
+      }
+    } catch (e) {
+      console.warn("Failed to load user theme preference");
+    }
+  } else {
+    userTheme = localStorage.getItem("theme") || "system";
+  }
+
+  applyTheme(userTheme);
+  setupSystemThemeListener();
+}
+
+export function applyTheme(theme) {
+  localStorage.setItem("theme", theme);
+  document.documentElement.setAttribute("data-theme", theme);
+
+  if (theme === "system") {
+    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.body.classList.toggle("darkmode", isDark);
+  } else {
+    document.body.classList.toggle("darkmode", theme === "dark");
   }
 }
 
-export function setupThemeToggle() {
-  const themeBtn = document.getElementById("theme-toggle");
-  if (themeBtn) {
-    themeBtn.addEventListener("click", () => {
-      console.log("clicked");
-      document.body.classList.toggle("darkmode");
-      const theme = document.body.classList.contains("darkmode")
-        ? "dark"
-        : "light";
-      localStorage.setItem("theme", theme);
-    });
+function setupSystemThemeListener() {
+  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  mediaQuery.addEventListener("change", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    if (currentTheme === "system") {
+      applyTheme("system");
+    }
+  });
+}
+
+export function saveThemePreference(theme) {
+  localStorage.setItem("theme", theme);
+
+  const user = auth.currentUser;
+  if (user) {
+    setDoc(doc(db, "users", user.uid), { theme }, { merge: true }).catch(
+      (err) => console.error("Failed to save theme to Firestore:", err),
+    );
   }
 }
+
+// ==================== MOBILE MENU ====================
 
 export function setupMobileMenu() {
   const menuToggle = document.getElementById("menu-toggle");
@@ -56,17 +100,19 @@ export function setupMobileMenu() {
   const mobileMenu = document.getElementById("mob-menu");
 
   if (menuToggle && mobileMenu) {
-    menuToggle.addEventListener("click", () => {
-      mobileMenu.classList.add("open");
-    });
+    menuToggle.addEventListener("click", () =>
+      mobileMenu.classList.add("open"),
+    );
   }
 
   if (menuClose && mobileMenu) {
-    menuClose.addEventListener("click", () => {
-      mobileMenu.classList.remove("open");
-    });
+    menuClose.addEventListener("click", () =>
+      mobileMenu.classList.remove("open"),
+    );
   }
 }
+
+// ==================== BUTTON LOADING ====================
 
 export function setButtonLoading(buttonEl, isLoading) {
   if (!buttonEl) return;
@@ -90,7 +136,7 @@ export function showConfirmModal(options = {}) {
       message = "This action cannot be undone.",
       confirmText = "Yes",
       cancelText = "Cancel",
-      isDestructive = false, // For red "Submit" button
+      isDestructive = false,
     } = options;
 
     if (currentConfirmModal) currentConfirmModal.remove();
@@ -143,7 +189,6 @@ export function showConfirmModal(options = {}) {
       container.remove();
     });
 
-    // Escape key
     const escHandler = (e) => {
       if (e.key === "Escape") {
         resolve(false);

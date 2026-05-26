@@ -13,6 +13,8 @@ import {
   setDoc,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { toast } from "../toast.js";
+import { applyTheme, saveThemePreference } from "../ui.js";
+// import { initializeTheme, saveThemePreference} from "../ui.js";
 
 export function init(container) {
   console.log("🛠️ Zavvy! Settings module initialized (Base64 Mode)");
@@ -22,7 +24,7 @@ export function init(container) {
       <h2 class="settings-title">Profile Settings</h2>
       
       <div class="profile-preview">
-        <div class="dash-prof preview-wrap" id="avatar-click-zone" title="Click to change    photo">
+        <div class="dash-prof preview-wrap" id="avatar-click-zone" title="Click to change photo">
           <div class="settings-img-wrap">
             <img class="settings-img" id="settings-preview-image" src="/assets/img/avatar.webp" alt="Profile" />
             <span class="settings-img-overlay"><i class="ph ph-camera"></i></span>
@@ -62,32 +64,26 @@ export function init(container) {
         <button type="submit" id="update-btn" class="btn-trace">
           <span>Update Profile</span>
           <svg aria-hidden="true" focusable="false">
-            <rect
-                x="0"
-                y="0"
-                rx="5"
-                ry="5"
-                fill="none"
-                width="100%"
-                height="100%"
-              ></rect>
+            <rect x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"></rect>
           </svg>
         </button>
       </form>
 
       <h2 class="settings-title">Utility Settings</h2>
 
-    <div class="settings-section">
-      <div class="settings-wrap">
-        <p>Dark Mode</p>
-        <button id="settings-theme-toggle" class="btn-trace theme-toggle">
-          <span><i class="ph ph-power"></i></span>
-          <svg aria-hidden="true" focusable="false">
-            <circle cx="20" cy="20" r="19"></circle>
-          </svg>
-        </button>
+      <div class="settings-section">
+        <div class="settings-wrap">
+          <p>Theme Preference</p>
+          <div class="custom-select-wrapper">
+            <select id="theme-select" class="custom-select">
+              <option value="system">System (Default)</option>
+              <option value="light">Light Mode</option>
+              <option value="dark">Dark Mode</option>
+            </select>
+            <i class="ph ph-caret-down"></i>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
   `;
 
@@ -98,7 +94,7 @@ export function init(container) {
     .getElementById("profile-form")
     .addEventListener("submit", handleProfileUpdate);
 
-  // Attach Independent Avatar Listeners
+  // Avatar Listeners
   const avatarClickZone = document.getElementById("avatar-click-zone");
   const avatarFileInput = document.getElementById("avatar-file-input");
 
@@ -107,20 +103,36 @@ export function init(container) {
     avatarFileInput.addEventListener("change", handleAvatarUpload);
   }
 
-  setupSettingsThemeToggle();
+  setupCustomThemeSelector();
+}
 
-  function setupSettingsThemeToggle() {
-    const themeBtn = document.getElementById("settings-theme-toggle");
-    if (themeBtn) {
-      themeBtn.addEventListener("click", () => {
-        document.body.classList.toggle("darkmode");
-        const theme = document.body.classList.contains("darkmode")
-          ? "dark"
-          : "light";
-        localStorage.setItem("theme", theme);
-      });
-    }
+// ==================== CUSTOM THEME SELECTOR ====================
+
+function setupCustomThemeSelector() {
+  const themeSelect = document.getElementById("theme-select");
+  if (!themeSelect) return;
+
+  const user = auth.currentUser;
+  let currentTheme = "system";
+
+  if (user) {
+    getDoc(doc(db, "users", user.uid)).then((docSnap) => {
+      if (docSnap.exists()) {
+        currentTheme = docSnap.data().theme || "system";
+        themeSelect.value = currentTheme;
+      }
+    });
+  } else {
+    currentTheme = localStorage.getItem("theme") || "system";
+    themeSelect.value = currentTheme;
   }
+
+  themeSelect.addEventListener("change", () => {
+    const selected = themeSelect.value;
+    applyTheme(selected);
+    saveThemePreference(selected);
+    toast.success(`Theme changed to ${selected}`);
+  });
 }
 
 // ==================== 1. LOAD EXISTING PROFILE ====================
@@ -147,7 +159,6 @@ async function loadUserProfile() {
         ? data.fullName.split(" ")[0]
         : "Champion";
 
-      // Pull Base64 image exclusively from Firestore
       if (data.photoURL) previewImg.src = data.photoURL;
     }
   } catch (error) {
@@ -162,7 +173,6 @@ async function handleAvatarUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  // Strict Guard: Max 800KB
   if (file.size > 1024 * 1024) {
     toast.error("Image is too large! Please choose an image under 1MB.");
     return;
@@ -182,14 +192,11 @@ async function handleAvatarUpload(e) {
         return;
       }
 
-      // FIX: Write strictly to Firestore, completely bypassing Firebase Auth's URL length limit
       const userRef = doc(db, "users", user.uid);
       await setDoc(userRef, { photoURL: base64String }, { merge: true });
 
-      // Sync UI visually
       if (settingsAvatarImg) settingsAvatarImg.src = base64String;
 
-      // Broadcast to main.js so global header updates instantly
       const firstName = document.getElementById(
         "settings-preview-name",
       ).textContent;
@@ -202,7 +209,7 @@ async function handleAvatarUpload(e) {
       toast.success("Profile picture updated successfully!");
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      toast.error("Failed to save avatar image to server.");
+      toast.error("Failed to save avatar image.");
     } finally {
       if (settingsAvatarImg) settingsAvatarImg.style.opacity = "1";
     }
@@ -234,10 +241,8 @@ async function handleProfileUpdate(e) {
   const school = document.getElementById("school").value.trim();
 
   try {
-    // FIX: Only update the displayName in Auth. Never pass Base64 strings here.
     await updateProfile(user, { displayName: fullName });
 
-    // Update Firestore Document (Text Fields only)
     await setDoc(
       doc(db, "users", user.uid),
       {
@@ -251,14 +256,11 @@ async function handleProfileUpdate(e) {
       { merge: true },
     );
 
-    // Update Local Preview Name
     const firstName = fullName.split(" ")[0];
     document.getElementById("settings-preview-name").textContent = firstName;
 
-    // Retrieve photo URL directly from the existing image tag so the broadcast doesn't wipe it
     const photoURL = document.getElementById("settings-preview-image").src;
 
-    // Broadcast to main.js so global header name updates instantly
     document.dispatchEvent(
       new CustomEvent("zavvyProfileUpdated", {
         detail: { photoURL, firstName },

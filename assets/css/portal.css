@@ -115,7 +115,7 @@
 .user-status-widget {
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   gap: var(--spacing-md);
 }
@@ -282,6 +282,10 @@
   }
 
   .dash-top-wrap{
+    justify-content: space-between;
+  }
+
+  .user-status-widget{
     justify-content: space-between;
   }
 

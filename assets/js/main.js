@@ -3,7 +3,7 @@
  * Acts as the Traffic Cop for the entire Zavvy! platform.
  */
 
-import { initializeTheme, setupThemeToggle, setupMobileMenu } from "./ui.js";
+import { initializeTheme, setupMobileMenu } from "./ui.js";
 import { initAuthModule } from "./auth.js";
 import { createToastContainer } from "./toast.js";
 import { initPortal } from "./portal.js";
@@ -12,13 +12,12 @@ import { initAuthGuard, setupLogoutButtons } from "./auth-guard.js";
 // ==================== ENGINE INITIALIZATION ====================
 
 document.addEventListener("DOMContentLoaded", () => {
-  initializeTheme();
-  setupThemeToggle();
+  initializeTheme(); // Now handles per-account + system theme
   setupMobileMenu();
   createToastContainer();
 
   setupLogoutButtons();
-  initAuthGuard(); 
+  initAuthGuard();
 
   document.addEventListener("zavvyProfileUpdated", (e) => {
     const { photoURL, firstName } = e.detail;
@@ -44,4 +43,3 @@ document.addEventListener("DOMContentLoaded", () => {
     initPortal();
   }
 });
-

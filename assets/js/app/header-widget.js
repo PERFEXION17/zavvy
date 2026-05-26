@@ -50,14 +50,11 @@ export function initHeaderWidget() {
             return;
           }
 
-          // Hydrate the streak so 2-day absences show as 0!
           const displayStreak = gameEngine.getDisplayStreak(
             data.currentStreak || 0,
             data.lastActiveDate,
           );
 
-          console.log('streak:' + displayStreak)
-          
           streakEl.textContent = displayStreak;
           sparksEl.textContent = data.sparks || 0;
           heartsEl.textContent = regenData.hearts;

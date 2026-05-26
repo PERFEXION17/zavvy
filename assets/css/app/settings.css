@@ -90,3 +90,43 @@
   margin: var(--spacing-md) 0;
   align-self: flex-start;
 }
+
+/* ==================== CUSTOM THEME SELECTOR ==================== */
+
+.custom-select-wrapper {
+  position: relative;
+  max-width: 300px;
+  width: 100%;
+}
+
+.custom-select {
+  appearance: none;
+  padding: var(--spacing-md);
+  padding-right: var(--spacing-xl);
+  width: 100%;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font);
+  font-size: var(--font-size-ui);
+  outline: none;
+  border: var(--border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--in-shadow);
+  cursor: pointer;
+}
+
+.custom-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow);
+}
+
+.custom-select-wrapper i {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  font-size: var(--font-size-ui);
+  color: var(--accent-color);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
