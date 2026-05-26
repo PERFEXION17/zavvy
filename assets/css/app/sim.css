@@ -168,7 +168,7 @@ label.subject-checkbox-label:has(> input.subject-checkbox:checked) {
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    color: var(--neutral);
+    color: #f5f5fe;
     border-radius: var(--border-radius);
   }
 

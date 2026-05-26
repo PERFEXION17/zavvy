@@ -426,11 +426,7 @@
     height: 140px;
   }
 
-  /* .stats-grid {
-    grid-template-columns: 1fr;
+  .hero-content .date {
+    align-items: flex-start;
   }
-
-  .stat-card{
-    justify-content: flex-start;
-  } */
 }
