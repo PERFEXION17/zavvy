@@ -40,7 +40,7 @@ export function setupThemeToggle() {
   const themeBtn = document.getElementById("theme-toggle");
   if (themeBtn) {
     themeBtn.addEventListener("click", () => {
-      console.log('clicked')
+      console.log("clicked");
       document.body.classList.toggle("darkmode");
       const theme = document.body.classList.contains("darkmode")
         ? "dark"
@@ -77,4 +77,80 @@ export function setButtonLoading(buttonEl, isLoading) {
     buttonEl.classList.remove("btn-loading");
     buttonEl.disabled = false;
   }
+}
+
+// ==================== CONFIRMATION MODAL ====================
+
+let currentConfirmModal = null;
+
+export function showConfirmModal(options = {}) {
+  return new Promise((resolve) => {
+    const {
+      title = "Are you sure?",
+      message = "This action cannot be undone.",
+      confirmText = "Yes",
+      cancelText = "Cancel",
+      isDestructive = false, // For red "Submit" button
+    } = options;
+
+    if (currentConfirmModal) currentConfirmModal.remove();
+
+    const modalHTML = `
+      <div class="confirm-modal-overlay">
+        <div class="confirm-modal">
+          <div class="confirm-modal-content">
+            <h3>${title}</h3>
+            <p>${message}</p>
+            
+            <div class="confirm-modal-actions">
+              <button id="confirm-cancel-btn" class="btn-trace">
+                <span>${cancelText}</span>
+                <svg><rect x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"></rect></svg>
+              </button>
+              <button id="confirm-proceed-btn" class="${isDestructive ? "btn-trace btn-destructive" : "btn-trace"}">
+                <span>${confirmText}</span>
+                <svg><rect x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"></rect></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const container = document.createElement("div");
+    container.innerHTML = modalHTML;
+    document.body.appendChild(container);
+    currentConfirmModal = container;
+
+    const overlay = container.querySelector(".confirm-modal-overlay");
+    const cancelBtn = container.querySelector("#confirm-cancel-btn");
+    const proceedBtn = container.querySelector("#confirm-proceed-btn");
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        resolve(false);
+        container.remove();
+      }
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      resolve(false);
+      container.remove();
+    });
+
+    proceedBtn.addEventListener("click", () => {
+      resolve(true);
+      container.remove();
+    });
+
+    // Escape key
+    const escHandler = (e) => {
+      if (e.key === "Escape") {
+        resolve(false);
+        container.remove();
+        document.removeEventListener("keydown", escHandler);
+      }
+    };
+    document.addEventListener("keydown", escHandler);
+  });
 }

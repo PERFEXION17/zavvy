@@ -172,6 +172,9 @@ export async function navigateTo(slug, updateHistory = true) {
   const item = NAV_ITEMS.find((nav) => nav.slug === slug);
   if (!item) return navigateTo("home");
 
+  const uppercaseLabel = item.label.toUpperCase();
+  document.title = `${uppercaseLabel} | Zavvy!`;
+
   // Update active states
   document.querySelectorAll(".sidebar-item, .mob-nav-item").forEach((el) => {
     el.classList.toggle("active", el.dataset.slug === slug);

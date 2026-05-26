@@ -164,7 +164,7 @@ async function handleAvatarUpload(e) {
 
   // Strict Guard: Max 800KB
   if (file.size > 1024 * 1024) {
-    toast.error("Image is too large! Please choose an image under 800KB.");
+    toast.error("Image is too large! Please choose an image under 1MB.");
     return;
   }
 

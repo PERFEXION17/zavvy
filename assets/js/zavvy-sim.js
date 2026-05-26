@@ -13,6 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { simQuestions } from "./sim-questions.js";
 import { toast } from "./toast.js";
+import { showConfirmModal } from "./ui.js";
 
 // BUG FIX: Import the Single Source of Truth Engine
 import { gameEngine } from "./game-engine.js";
@@ -84,9 +85,18 @@ function initExam() {
   });
 
   submitBtn.addEventListener("click", () => {
-    if (confirm("Submit exam now? You cannot return after submission.")) {
-      submitExam();
-    }
+     showConfirmModal({
+       title: "Submit Exam?",
+       message:
+         "You cannot return after submission. Are you sure you want to finish now?",
+       confirmText: "Yes, Submit",
+       cancelText: "Review Answers",
+       isDestructive: true,
+     }).then(async (confirmed) => {
+       if (confirmed) {
+         await submitExam();
+       }
+     });
   });
 }
 

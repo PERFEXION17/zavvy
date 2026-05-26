@@ -113,6 +113,7 @@
 }
 
 .user-status-widget {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -280,12 +281,15 @@
     align-items: center;
   }
 
+  .dash-top-wrap{
+    justify-content: space-between;
+  }
+
   .xp-wrap{
     display: none;
   }
 
   #content-viewport {
     padding: var(--spacing-xs) !important;
-    /* margin-bottom: var(--spacing-xxl); */
   }
 }
