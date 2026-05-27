@@ -1,6 +1,7 @@
 /**
  * zavvy-sim.js - Full Immersive JAMB CBT Engine
  * Receives subjects via URL: zavvy-sim.html?subjects=english,mathematics,biology,commerce
+ * + Mobile Subject Nav + Review Mode + Enhanced Button States
  */
 
 import { auth, db } from "./firebase-config.js";
@@ -15,7 +16,6 @@ import { simQuestions } from "./sim-questions.js";
 import { toast } from "./toast.js";
 import { showConfirmModal } from "./ui.js";
 
-// BUG FIX: Import the Single Source of Truth Engine
 import { gameEngine } from "./game-engine.js";
 
 let currentUser = null;
@@ -25,7 +25,8 @@ let currentIdx = 0;
 let timeLeft = 120 * 60;
 let countdownTimer;
 let userAnswers = {};
-let isSubmitting = false; // Prevent double-clicking submit
+let isSubmitting = false;
+let isReviewMode = false;
 
 // DOM Elements
 const timerEl = document.getElementById("timer");
@@ -67,6 +68,7 @@ function initExam() {
 
   initializeUserAnswers();
   renderSubjectNav();
+  renderMobileSubjectNav();
   startTimer();
   renderQuestion();
 
@@ -84,20 +86,8 @@ function initExam() {
     }
   });
 
-  submitBtn.addEventListener("click", () => {
-     showConfirmModal({
-       title: "Submit Exam?",
-       message:
-         "You cannot return after submission. Are you sure you want to finish now?",
-       confirmText: "Yes, Submit",
-       cancelText: "Review Answers",
-       isDestructive: true,
-     }).then(async (confirmed) => {
-       if (confirmed) {
-         await submitExam();
-       }
-     });
-  });
+  // Submit button handler (dynamic based on mode)
+  submitBtn.addEventListener("click", handleSubmitButtonClick);
 }
 
 function initializeUserAnswers() {
@@ -108,6 +98,7 @@ function initializeUserAnswers() {
   });
 }
 
+// ==================== SUBJECT NAV (Desktop + Mobile) ====================
 function renderSubjectNav() {
   subjectNav.innerHTML = "";
   selectedSubjects.forEach((subject) => {
@@ -118,9 +109,40 @@ function renderSubjectNav() {
       currentSubject = subject;
       currentIdx = 0;
       renderSubjectNav();
+      renderMobileSubjectNav();
       renderQuestion();
     };
     subjectNav.appendChild(btn);
+  });
+}
+
+function renderMobileSubjectNav() {
+  let mobileNav = document.getElementById("mobile-subject-nav");
+
+  if (!mobileNav) {
+    mobileNav = document.createElement("div");
+    mobileNav.id = "mobile-subject-nav";
+    mobileNav.className = "mobile-subject-nav";
+    const controlsArea =
+      document.querySelector(
+        ".exam-controls, .navigation-buttons, #options-area",
+      )?.parentElement || document.body;
+    controlsArea.appendChild(mobileNav);
+  }
+
+  mobileNav.innerHTML = "";
+  selectedSubjects.forEach((subject) => {
+    const btn = document.createElement("button");
+    btn.className = `mobile-subject-tab ${subject === currentSubject ? "active" : ""}`;
+    btn.textContent = subject.charAt(0).toUpperCase() + subject.slice(1, 9);
+    btn.onclick = () => {
+      currentSubject = subject;
+      currentIdx = 0;
+      renderSubjectNav();
+      renderMobileSubjectNav();
+      renderQuestion();
+    };
+    mobileNav.appendChild(btn);
   });
 }
 
@@ -149,7 +171,7 @@ function renderQuestion() {
 
   const q = questions[currentIdx];
 
-  questionCounter.textContent = `${currentIdx + 1} of ${questions.length}`;
+  questionCounter.textContent = `${currentIdx + 1} of ${questions.length}${isReviewMode ? " (Review)" : ""}`;
   currentSubjectDisplay.textContent =
     currentSubject.charAt(0).toUpperCase() + currentSubject.slice(1);
 
@@ -159,15 +181,30 @@ function renderQuestion() {
   q.o.forEach((option, i) => {
     const btn = document.createElement("button");
     btn.className = "option-btn";
-    if (userAnswers[currentSubject][currentIdx] === i)
-      btn.classList.add("selected");
+
+    if (isReviewMode) {
+      const userAns = userAnswers[currentSubject][currentIdx];
+      const correctAns = q.a;
+
+      if (i === correctAns) btn.classList.add("correct");
+      if (i === userAns)
+        btn.classList.add(userAns === correctAns ? "correct" : "incorrect");
+      btn.disabled = true;
+    } else {
+      if (userAnswers[currentSubject][currentIdx] === i)
+        btn.classList.add("selected");
+      btn.onclick = () => selectOption(i);
+    }
+
     btn.innerHTML = option;
-    btn.onclick = () => selectOption(i);
     optionsArea.appendChild(btn);
   });
 
+  // UX Polish: Visual disable states
   prevBtn.disabled = currentIdx === 0;
   nextBtn.disabled = currentIdx === questions.length - 1;
+  prevBtn.classList.toggle("disabled", currentIdx === 0);
+  nextBtn.classList.toggle("disabled", currentIdx === questions.length - 1);
 }
 
 function selectOption(index) {
@@ -175,10 +212,31 @@ function selectOption(index) {
   renderQuestion();
 }
 
-// ==================== SUBMISSION ====================
+// ==================== SUBMIT BUTTON HANDLER (Dynamic) ====================
+function handleSubmitButtonClick() {
+  if (isReviewMode) {
+    // In review mode → Return to Dashboard
+    window.location.href = "portal.html?tab=home";
+  } else {
+    // Normal exam mode
+    showConfirmModal({
+      title: "Submit Exam?",
+      message:
+        "You cannot return after submission. Are you sure you want to finish now?",
+      confirmText: "Yes, Submit",
+      cancelText: "Review Answers",
+      isDestructive: true,
+    }).then(async (confirmed) => {
+      if (confirmed) {
+        await submitExam();
+      }
+    });
+  }
+}
 
+// ==================== SUBMISSION ====================
 async function submitExam() {
-  if (isSubmitting) return; // Prevent duplicate submissions
+  if (isSubmitting) return;
   isSubmitting = true;
   clearInterval(countdownTimer);
 
@@ -199,7 +257,6 @@ async function submitExam() {
       questions.forEach((q, idx) => {
         if (userAnswers[subject][idx] === q.a) correct++;
       });
-      // JAMB uses 100 points per subject (400 total)
       const score = Math.round((correct / questions.length) * 100);
       totalScore += score;
       breakdown[subject] = { correct, score };
@@ -211,22 +268,21 @@ async function submitExam() {
   let finalSparks = 0;
 
   try {
-    // 1. Let the Central Engine handle the XP, Sparks, Streaks, and Logs!
     const rewardResult = await gameEngine.awardActivityRewards(
       currentUser.uid,
       "sim_complete",
       finalScore,
     );
 
-    // BUG FIX: If the engine returns null (due to Firestore rule block), throw an error!
     if (!rewardResult) {
-      throw new Error("Game Engine rejected the transaction. Check Firestore Rules.");
+      throw new Error(
+        "Game Engine rejected the transaction. Check Firestore Rules.",
+      );
     }
 
     finalXP = rewardResult.xpEarned;
     finalSparks = rewardResult.sparksEarned;
 
-    // 2. Only write the exam receipt to the subcollection here
     await addDoc(collection(db, "users", currentUser.uid, "exam_history"), {
       examType: "JAMB UTME Mock",
       score: finalScore,
@@ -247,7 +303,6 @@ async function submitExam() {
     setButtonLoading(submitBtn, false);
   }
 
-  // Pass the central engine's finalized rewards to the UI
   renderResult(finalScore, finalXP, finalSparks, breakdown);
 }
 
@@ -270,20 +325,20 @@ function renderResult(score, xp, sparks, breakdown) {
             <span>+${sparks} Sparks</span>
           </div>
         </div>
-        <button onclick="window.location.href='portal.html?tab=home'" class="btn-trace">
-           <span>Return to Dashboard</span>
-            <svg aria-hidden="true" focusable="false">
-              <rect
-                x="0"
-                y="0"
-                rx="5"
-                ry="5"
-                fill="none"
-                width="100%"
-                height="100%"
-              ></rect>
-            </svg>
-        </button>
+        <div class="result-actions">
+          <button onclick="window.location.href='portal.html?tab=home'" class="btn-trace">
+             <span>Return to Dashboard</span>
+              <svg aria-hidden="true" focusable="false">
+                <rect x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"></rect>
+              </svg>
+          </button>
+          <button onclick="startReviewMode()" class="btn-trace">
+             <span>Review SIM</span>
+              <svg aria-hidden="true" focusable="false">
+                <rect x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"></rect>
+              </svg>
+          </button>
+        </div>
       </div>
     </article>
   `;
@@ -291,8 +346,27 @@ function renderResult(score, xp, sparks, breakdown) {
   resultOverlay.classList.remove("hidden");
 }
 
-// ==================== UI HELPERS ====================
+// ==================== REVIEW MODE ====================
+window.startReviewMode = function () {
+  isReviewMode = true;
+  resultOverlay.classList.add("hidden");
+  currentIdx = 0;
+  currentSubject = selectedSubjects[0];
+  // Update Submit button text for Review Mode
+  if (submitBtn) {
+    submitBtn.innerHTML = `
+      <span>Home</span>
+      <svg aria-hidden="true" focusable="false">
+        <rect x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"></rect>
+      </svg>
+    `;
+  }
+  renderSubjectNav();
+  renderMobileSubjectNav();
+  renderQuestion();
+};;
 
+// ==================== UI HELPERS ====================
 export function setButtonLoading(buttonEl, isLoading) {
   if (!buttonEl) return;
   if (isLoading) {
