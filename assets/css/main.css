@@ -5,6 +5,7 @@
 @import "portal.css";
 @import "./app/home.css";
 @import "./app/sim.css";
+@import "./app/leaderboards.css";
 @import "./app/settings.css";
 
 @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");

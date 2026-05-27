@@ -79,6 +79,7 @@
 .section-header {
   margin-bottom: var(--spacing-md);
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: var(--spacing-xs);
 }
@@ -95,6 +96,12 @@
   font-weight: var(--font-weight-md);
   text-transform: uppercase;
   letter-spacing: 0.1rem;
+}
+
+.section-header-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 /* ==================== 3/4 PROGRESS CIRCLE ==================== */
@@ -233,18 +240,6 @@
   border: var(--border);
   border-radius: var(--border-radius);
   box-shadow: var(--in-shadow);
-}
-
-.quests-column .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.quests-column .section-header-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
 }
 
 .quests-complete {
