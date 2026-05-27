@@ -160,33 +160,41 @@ export async function refillHeartsWithSparks(userId, currentSparks) {
   }
 }
 
-// ==================== XP & LEVEL SYSTEM (FIXED) ====================
+// ==================== XP & LEVEL SYSTEM ====================
 
 export function calculateLevel(totalXP) {
   let level = 1;
-  let xpForNextLevel = XP_CONFIG.LEVEL_BASE; // e.g., 500
-  let xpAccumulated = 0; // Total XP required to reach the CURRENT level
+  let xpForNextLevel = XP_CONFIG.LEVEL_BASE;
+  let xpAccumulated = 0;
 
-  // Accumulate thresholds correctly
   while (totalXP >= xpAccumulated + xpForNextLevel) {
     level++;
     xpAccumulated += xpForNextLevel;
     xpForNextLevel = Math.floor(xpForNextLevel * XP_CONFIG.LEVEL_MULTIPLIER);
   }
 
-  // Calculate exact progress within the current level
   const xpIntoCurrentLevel = totalXP - xpAccumulated;
-  const progressPercentage = Math.floor((xpIntoCurrentLevel / xpForNextLevel) * 100);
+  const progressPercentage = Math.floor(
+    (xpIntoCurrentLevel / xpForNextLevel) * 100,
+  );
 
-  return { 
-    level, 
-    xpToNextLevel: xpForNextLevel - xpIntoCurrentLevel, 
+  return {
+    level,
+    xpToNextLevel: xpForNextLevel - xpIntoCurrentLevel,
     progress: progressPercentage,
-    totalXP 
+    totalXP,
   };
 }
 
 export function calculateXPReward(activityType, performanceScore = 0) {
+  // ANTI-CHEAT: No XP for zero-effort performance activities
+  if (
+    (activityType === "sim_complete" || activityType === "synapse_game") &&
+    performanceScore <= 0
+  ) {
+    return 0;
+  }
+
   let baseXP = 0;
   switch (activityType) {
     case "sim_complete":
@@ -214,6 +222,14 @@ export function calculateSparksReward(
   performanceScore = 0,
   currentStreak = 1,
 ) {
+  // ANTI-CHEAT: No participation trophies. Score 0 = 0 Sparks.
+  if (
+    (activityType === "sim_complete" || activityType === "synapse_game") &&
+    performanceScore <= 0
+  ) {
+    return 0;
+  }
+
   let baseSparks = 0;
   switch (activityType) {
     case "sim_complete":
@@ -256,18 +272,16 @@ export function calculateNewStreak(
   return { currentStreak: 1, highestStreak };
 }
 
-// ==================== STREAK DISPLAY HYDRATOR (NEW) ====================
+// ==================== STREAK DISPLAY HYDRATOR ====================
 
 export function getDisplayStreak(currentStreak, lastActiveDate) {
   const today = getTodayDate();
   if (!lastActiveDate) return 0;
   if (lastActiveDate === today) return currentStreak;
-  
-  // If they were active yesterday, their streak is still alive waiting for today's activity
-  if (isYesterday(lastActiveDate)) return currentStreak; 
-  
-  // If it's been 2+ days, the streak is visually dead until they start a new one
-  return 0; 
+
+  if (isYesterday(lastActiveDate)) return currentStreak;
+
+  return 0;
 }
 
 // ==================== DAILY QUESTS SYSTEM ====================
@@ -328,7 +342,6 @@ export async function awardActivityRewards(
   const userRef = doc(db, "users", userId);
 
   try {
-    // BUG FIX: State Hydration. Fetch real user data to determine streak.
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) return null;
 
@@ -337,31 +350,28 @@ export async function awardActivityRewards(
     const highestStreak = userData.highestStreak || 1;
     const lastActiveDate = userData.lastActiveDate || "";
 
-    // ==================== STREAK SYSTEM INTEGRATION ====================
     const streakResult = calculateNewStreak(
       currentStreak,
       highestStreak,
       lastActiveDate,
     );
-    // =================================================================
 
-    // Calculate dynamic rewards based on real streak
+    // Dynamic rewards correctly blocked by the Anti-Cheat guards if score is 0
     const xpEarned = calculateXPReward(activityType, performanceScore);
     const sparksEarned = calculateSparksReward(
       activityType,
       performanceScore,
-      streakResult.currentStreak, // Use updated streak
+      streakResult.currentStreak,
     );
 
-    // BUG FIX: Atomic Batched Writes to prevent network race conditions
     const batch = writeBatch(db);
 
     const profileUpdates = {
       globalXP: increment(xpEarned),
       sparks: increment(sparksEarned),
       lastActiveDate: getTodayDate(),
-      currentStreak: streakResult.currentStreak, // ← Added
-      highestStreak: streakResult.highestStreak, // ← Added
+      currentStreak: streakResult.currentStreak,
+      highestStreak: streakResult.highestStreak,
     };
 
     if (activityType === "sim_complete")
@@ -373,7 +383,6 @@ export async function awardActivityRewards(
 
     batch.update(userRef, profileUpdates);
 
-    // BUG FIX: Subcollection routing to evade the 1MB document limit
     const logsRef = doc(collection(userRef, "activity_logs"));
     batch.set(logsRef, {
       date: getTodayDate(),
@@ -383,7 +392,6 @@ export async function awardActivityRewards(
       timestamp: serverTimestamp(),
     });
 
-    // Execute the unified transaction
     await batch.commit();
 
     console.log(
@@ -402,7 +410,7 @@ export async function awardActivityRewards(
   }
 }
 
-// ==================== ACTIVITY LOGGING (Standalone) ====================
+// ==================== ACTIVITY LOGGING ====================
 
 export async function logActivity(
   userId,
