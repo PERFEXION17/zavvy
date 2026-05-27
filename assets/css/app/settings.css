@@ -130,3 +130,12 @@
   pointer-events: none;
 }
 
+@media (max-width: 600px){
+  .settings-wrap{
+    padding: var(--spacing-xs);
+  }
+
+  .settings-wrap input{
+    max-width: 300px;
+  }
+}
