@@ -140,6 +140,6 @@
   }
 
   .settings-wrap input{
-    max-width: 200px;
+    max-width: 200px !important;
   }
 }
