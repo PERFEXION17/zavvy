@@ -127,7 +127,7 @@
   align-items: center;
   justify-content: center;
   background: conic-gradient(
-    var(--accent-color) 0deg 270deg,
+    var(--dynamic-accent) 0deg 270deg,
     var(--bg-color-2) 270deg 360deg
   );
   border-radius: 50%;
@@ -160,7 +160,7 @@
 
 .xp-label {
   margin-bottom: var(--spacing-xs);
-  color: var(--accent-color);
+  color: var(--dynamic-accent);
   font-size: var(--font-size-title);
   font-weight: var(--font-weight-md);
 }

@@ -138,12 +138,12 @@
 }
 
 .option-btn:hover {
-  border-color: var(--accent-color);
+  border-color: var(--dynamic-accent);
 }
 
 .option-btn.selected {
   background: var(--bg-color-2);
-  border-color: var(--accent-color);
+  border-color: var(--dynamic-accent);
   font-weight: var(--font-weight-bold);
 }
 
@@ -206,7 +206,7 @@
 
 .final-score {
   margin: var(--spacing-md) 0;
-  color: var(--accent-color);
+  color: var(--dynamic-accent);
   font-size: 6rem;
   font-weight: var(--font-weight-bold);
   line-height: 1;

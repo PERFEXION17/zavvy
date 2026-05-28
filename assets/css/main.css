@@ -64,8 +64,9 @@
   --neutral: #00000e;
   --text-color: #eee;
   --dynamic-accent: #d4af37;
-  --shadow: 0 4px 6px #6c3baa40;
-  --in-shadow: inset 0 -2px 4px #6b3baa40;
+  --shadow: 0 4px 6px #d4af3720;
+  --in-shadow: inset 0 -2px 4px #d4af3720;
+    --border: 1px solid #d4af3720;
   --dash-hero: url(/assets/img/dash-hero-dark.webp);
 }
 
@@ -103,7 +104,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--accent-color);
+  background-color: var(--dynamic-accent);
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: var(--border-radius);
@@ -434,7 +435,7 @@ footer {
 }
 
 .credit a {
-  color: var(--accent-color);
+  color: var(--dynamic-accent);
 }
 
 .credit a:hover {

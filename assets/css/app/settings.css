@@ -47,7 +47,7 @@
   position: relative;
   display: flex;
   border-radius: 50%;
-  border: 4px solid var(--accent-color);
+  border: 4px solid var(--dynamic-accent);
   overflow: hidden;
     cursor: pointer;
 }
@@ -116,7 +116,7 @@
 }
 
 .custom-select:focus {
-  border-color: var(--accent-color);
+  border-color: var(--dynamic-accent);
   box-shadow: var(--shadow);
 }
 
@@ -125,9 +125,13 @@
   right: var(--spacing-md);
   top: 50%;
   font-size: var(--font-size-ui);
-  color: var(--accent-color);
+  color: var(--dynamic-accent);
   transform: translateY(-50%);
   pointer-events: none;
+}
+
+.mob-logout-btn{
+  display: none !important;
 }
 
 @media (max-width: 600px){
@@ -141,5 +145,9 @@
 
   .settings-wrap input{
     max-width: 200px !important;
+  }
+
+  .mob-logout-btn{
+    display: flex !important;
   }
 }

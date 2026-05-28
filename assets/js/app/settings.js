@@ -27,12 +27,12 @@ export function init(container) {
         <div class="dash-prof preview-wrap" id="avatar-click-zone" title="Click to change photo">
           <div class="settings-img-wrap">
             <img class="settings-img" id="settings-preview-image" src="/assets/img/avatar.webp" alt="Profile" />
-            <span class="settings-img-overlay"><i class="ph ph-camera"></i></span>
+            <span class="settings-img-overlay"><i class="ph-thin ph-camera"></i></span>
           </div>
           <span id="settings-preview-name">Champion</span>
         </div>
         <input type="file" id="avatar-file-input" accept="image/png, image/jpeg, image/webp" style="display: none;">
-        <small style="color: var(--accent-color); display: block; text-align: center; margin-top: 10px;">Click image to change (Max 1MB)</small>
+        <small style="color: var(--dynamic-accent); display: block; text-align: center; margin-top: 10px;">Click image to change (Max 1MB)</small>
       </div>
 
       <form id="profile-form" class="settings-section">
@@ -80,10 +80,20 @@ export function init(container) {
               <option value="light">Light Mode</option>
               <option value="dark">Dark Mode</option>
             </select>
-            <i class="ph ph-caret-down"></i>
+            <i class="ph-thin ph-caret-down"></i>
           </div>
         </div>
       </div>
+
+      <button class="logout-btn btn-trace mob-logout-btn" id="sidebar-logout">
+        <span class="icon"><i class="ph-thin ph-sign-out"></i></span>
+        <span class="pad-dash-text">Log Out</span>
+        <svg aria-hidden="true" focusable="false">
+          <rect
+            x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"
+          ></rect>
+        </svg>
+      </button>
     </div>
   `;
 

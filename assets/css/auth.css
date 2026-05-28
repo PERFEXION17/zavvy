@@ -113,7 +113,7 @@
 .auth-btn {
   background-color: var(--bg-color) !important;
   color: var(--text-color) !important;
-  border: 2px solid var(--accent-color);
+  border: 2px solid var(--dynamic-accent);
 }
 
 .auth-btn i {

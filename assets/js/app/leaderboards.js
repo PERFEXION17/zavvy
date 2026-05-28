@@ -29,9 +29,9 @@ export function init(container) {
         <h2 class="leaderboard-title">Climb the ranks. Dominate the Competition.</h2>
         
         <div class="leaderboard-tabs">
-          <button data-filter="global" class="tab-btn active"><i class="ph ph-globe-hemisphere-west"></i> Global</button>
-          <button data-filter="national" class="tab-btn"><i class="ph ph-flag"></i> National</button>
-          <button data-filter="regional" class="tab-btn"><i class="ph ph-map-pin-simple"></i> Regional</button>
+          <button data-filter="global" class="tab-btn active"><i class="ph-thin ph-globe-hemisphere-west"></i> Global</button>
+          <button data-filter="national" class="tab-btn"><i class="ph-thin ph-flag"></i> National</button>
+          <button data-filter="regional" class="tab-btn"><i class="ph-thin ph-map-pin-simple"></i> Regional</button>
         </div>
       </div>
 
@@ -126,7 +126,7 @@ function startRealtimeListener(firestoreQuery, filter) {
         error.message.includes("index")
       ) {
         listEl.innerHTML = `
-          <div style="padding: 40px; text-align: center; color: var(--accent-color);">
+          <div style="padding: 40px; text-align: center; color: var(--dynamic-accent);">
             <p><strong>Regional leaderboard is being prepared.</strong></p>
             <small>Please wait a few minutes while we build the index.</small>
           </div>
@@ -184,7 +184,7 @@ function renderLeaderboard(users) {
 
   listEl.innerHTML =
     html ||
-    `<p style="text-align:center; padding: 60px; color: var(--accent-color);">No champions yet. Be the first!</p>`;
+    `<p style="text-align:center; padding: 60px; color: var(--dynamic-accent);">No champions yet. Be the first!</p>`;
 }
 
 async function renderMyRank(users, filter) {

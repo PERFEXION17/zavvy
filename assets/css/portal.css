@@ -65,7 +65,7 @@
 .sidebar-item:hover,
 .sidebar-item.active {
   background: var(--bg-color);
-  color: var(--accent-color-2);
+  color: var(--dynamic-accent);
   box-shadow: var(--in-shadow);
 }
 
@@ -151,7 +151,7 @@
 }
 
 #header-user-level {
-  color: var(--accent-color);
+  color: var(--dynamic-accent);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-md);
 }
@@ -212,7 +212,7 @@
 
 .mob-nav-item:hover,
 .mob-nav-item.active {
-  color: var(--accent-color);
+  color: var(--dynamic-accent);
   background-color: var(--bg-color-2);
 }
 
@@ -281,19 +281,23 @@
     align-items: center;
   }
 
-  .dash-top-wrap{
+  .dash-top-wrap {
     justify-content: space-between;
   }
 
-  .user-status-widget{
+  .user-status-widget {
     justify-content: space-between;
   }
 
-  .xp-wrap{
+  .xp-wrap {
     display: none;
   }
 
   #content-viewport {
     padding: var(--spacing-xs) !important;
+  }
+
+  .pad-dash-text {
+    display: block;
   }
 }
