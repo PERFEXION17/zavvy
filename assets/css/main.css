@@ -17,6 +17,7 @@
   --primary-color: #000;
   --accent-color: #6c3baa;
   --accent-color-2: #d4af37;
+  --dynamic-accent: #6c3baa;
   --neutral: white;
   --text-color: #090909;
   --success-green: #00b478;
@@ -62,6 +63,7 @@
   --bg-color: #000010;
   --neutral: #00000e;
   --text-color: #eee;
+  --dynamic-accent: #d4af37;
   --shadow: 0 4px 6px #6c3baa40;
   --in-shadow: inset 0 -2px 4px #6b3baa40;
   --dash-hero: url(/assets/img/dash-hero-dark.webp);
@@ -442,12 +444,5 @@ footer {
 @media (max-width: 600px) {
   .loading-img {
     width: 25%;
-  }
-
-  input[type="text"],
-  input[type="date"],
-  input[type="email"],
-  input[type="password"] {
-    max-width: 200px;
   }
 }
