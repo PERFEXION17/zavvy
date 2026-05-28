@@ -101,7 +101,7 @@
 }
 
 .leaderboard-row.current-user {
-  background: linear-gradient(90deg, #6c3baa50, #d4af37a0);
+  background: var(--bg-color-2);
   border: 2px solid var(--accent-color);
 }
 
