@@ -206,7 +206,7 @@
 }
 
 .teaser-xp {
-  color: var(--accent-color);
+  color: var(--dynamic-accent);
   font-size: var(--font-size-xs);
   font-weight: bold;
   text-align: right;

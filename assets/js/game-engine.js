@@ -333,11 +333,7 @@ export function areAllQuestsComplete(dailyQuests) {
 
 // ==================== CENTRAL REWARD DISTRIBUTOR ====================
 
-export async function awardActivityRewards(
-  userId,
-  activityType,
-  performanceScore = 0,
-) {
+export async function awardActivityRewards(userId, activityType, performanceScore = 0) {
   if (!userId) return null;
   const userRef = doc(db, "users", userId);
 
@@ -353,33 +349,62 @@ export async function awardActivityRewards(
     const streakResult = calculateNewStreak(
       currentStreak,
       highestStreak,
-      lastActiveDate,
+      lastActiveDate
     );
 
-    // Dynamic rewards correctly blocked by the Anti-Cheat guards if score is 0
-    const xpEarned = calculateXPReward(activityType, performanceScore);
-    const sparksEarned = calculateSparksReward(
-      activityType,
-      performanceScore,
-      streakResult.currentStreak,
-    );
+    // 1. Calculate Base Rewards (Anti-cheat guards are active here!)
+    const baseXP = calculateXPReward(activityType, performanceScore);
+    const baseSparks = calculateSparksReward(activityType, performanceScore, streakResult.currentStreak);
+
+    // 2. Handle Daily Quests & Bounties
+    let currentQuests = userData.dailyQuests;
+    if (!currentQuests || shouldResetQuests(currentQuests.lastResetDate)) {
+      currentQuests = initializeDailyQuests();
+    }
+
+    let bonusXP = 0;
+    let bonusSparks = 0;
+    const questsBefore = currentQuests.quests || currentQuests;
+    let updatedQuests = currentQuests;
+
+    // ANTI-CHEAT: Only progress quests if they actually scored points (baseXP > 0)
+    if (baseXP > 0 || activityType === "neo_lesson") {
+      updatedQuests = updateQuestProgress(currentQuests, activityType, 1);
+      
+      // Normalize array structure
+      const questsAfter = updatedQuests.quests || updatedQuests;
+
+      // Detect NEWLY completed quests to crack open the treasure chest
+      questsAfter.forEach((afterQuest) => {
+        if (afterQuest.completed) {
+          const beforeQuest = questsBefore.find((q) => q.id === afterQuest.id);
+          if (beforeQuest && !beforeQuest.completed) {
+            bonusXP += afterQuest.rewardXP || 0;
+            bonusSparks += afterQuest.rewardSparks || 0;
+            console.log(`🎯 Quest Mastered! Bonus: +${afterQuest.rewardXP} XP | +${afterQuest.rewardSparks} Sparks`);
+          }
+        }
+      });
+    }
+
+    // 3. Combine Base Rewards with Quest Bounties
+    const totalXPEarned = baseXP + bonusXP;
+    const totalSparksEarned = baseSparks + bonusSparks;
 
     const batch = writeBatch(db);
 
     const profileUpdates = {
-      globalXP: increment(xpEarned),
-      sparks: increment(sparksEarned),
+      globalXP: increment(totalXPEarned),
+      sparks: increment(totalSparksEarned),
       lastActiveDate: getTodayDate(),
       currentStreak: streakResult.currentStreak,
       highestStreak: streakResult.highestStreak,
+      dailyQuests: updatedQuests // Saves quest progress to Firestore
     };
 
-    if (activityType === "sim_complete")
-      profileUpdates.zavvySimExamsTaken = increment(1);
-    else if (activityType === "neo_lesson")
-      profileUpdates.neoLessonsCompleted = increment(1);
-    else if (activityType === "synapse_game")
-      profileUpdates.synapseGamesPlayed = increment(1);
+    if (activityType === "sim_complete") profileUpdates.zavvySimExamsTaken = increment(1);
+    else if (activityType === "neo_lesson") profileUpdates.neoLessonsCompleted = increment(1);
+    else if (activityType === "synapse_game") profileUpdates.synapseGamesPlayed = increment(1);
 
     batch.update(userRef, profileUpdates);
 
@@ -387,20 +412,19 @@ export async function awardActivityRewards(
     batch.set(logsRef, {
       date: getTodayDate(),
       activity: activityType,
-      xp: xpEarned,
-      sparks: sparksEarned,
+      xp: totalXPEarned,
+      sparks: totalSparksEarned,
+      score: performanceScore,
       timestamp: serverTimestamp(),
     });
 
     await batch.commit();
 
-    console.log(
-      `🎉 Rewards Awarded → +${xpEarned} XP | +${sparksEarned} Sparks | Streak: ${streakResult.currentStreak}`,
-    );
+    console.log(`🎉 Total Rewards → +${totalXPEarned} XP | +${totalSparksEarned} Sparks | Streak: ${streakResult.currentStreak}`);
 
     return {
-      xpEarned,
-      sparksEarned,
+      xpEarned: totalXPEarned,
+      sparksEarned: totalSparksEarned,
       activityType,
       currentStreak: streakResult.currentStreak,
     };
