@@ -175,4 +175,8 @@ label.subject-checkbox-label:has(> input.subject-checkbox:checked) {
   .sim-landing-text button {
     background: var(--neutral);
   }
+
+  .subjects-grid{
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

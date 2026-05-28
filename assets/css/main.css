@@ -443,4 +443,11 @@ footer {
   .loading-img {
     width: 25%;
   }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="email"],
+  input[type="password"] {
+    max-width: 200px;
+  }
 }

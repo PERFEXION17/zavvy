@@ -131,11 +131,15 @@
 }
 
 @media (max-width: 600px){
-  .settings-wrap{
-    padding: var(--spacing-xs);
+  #update-btn{
+    margin: var(--spacing-md);
+  }
+
+  .settings-section{
+    padding: 0;
   }
 
   .settings-wrap input{
-    max-width: 300px;
+    max-width: 200px;
   }
 }

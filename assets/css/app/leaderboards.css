@@ -19,6 +19,7 @@
   padding: var(--spacing-xs);
   width: fit-content;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-md);
   background: var(--bg-color);
   border-radius: var(--border-radius);
@@ -30,10 +31,12 @@
   align-items: center;
   gap: var(--spacing-xs);
   background: transparent;
+  color: var(--text-color);
   font-size: var(--font-size-ui);
   letter-spacing: 0.1rem;
   border: none;
   border-radius: var(--border-radius-s);
+  opacity: .6;
   cursor: pointer;
 }
 
@@ -43,6 +46,7 @@
 
 .tab-btn:hover {
   box-shadow: var(--in-shadow);
+  opacity: 1;
 }
 
 .tab-btn.active {
@@ -50,6 +54,7 @@
   color: var(--text-color);
   font-weight: var(--font-weight-md);
   box-shadow: var(--in-shadow);
+  opacity: 1;
 }
 
 .my-rank-card {
@@ -224,5 +229,18 @@
 @media (max-width: 600px) {
   .leaderboard-row {
     gap: var(--spacing-xs);
+  }
+
+  .my-rank-left{
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+  }
+
+  .my-rank-label{
+    max-width: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--font-size-ui);
   }
 }
