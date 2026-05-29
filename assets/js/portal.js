@@ -1,6 +1,6 @@
 /**
  * portal.js - Portal Router & Layout Controller
- * Enhanced with smooth fade/scale/lift transitions
+ * Enhanced with permanent global routing & declarative event delegation
  */
 
 import { initHeaderWidget } from "./app/header-widget.js";
@@ -62,7 +62,10 @@ const OVERFLOW_SLUGS = ["leaderboards", "shop", "profile"];
 let currentSection = null;
 
 export function initPortal() {
-  console.log("🧩 Zavvy Portal Initializing with Smooth Transitions...");
+  console.log("🧩 Zavvy Portal Initializing with Centralized Router...");
+
+  // Expose routing globally EXACTLY once here. It lives for the entire session lifecycle.
+  window.navigateTo = (slug) => navigateTo(slug);
 
   initHeaderWidget();
   setupNavigation();
@@ -143,7 +146,7 @@ function setupNavigation() {
   const settingsItem = NAV_ITEMS.find((nav) => nav.slug === "settings");
   if (settingsItem) mobContainer.appendChild(createMobItem(settingsItem));
 
-  // Hidden Overlay
+  // Hidden Overflow Menu
   const overlay = document.createElement("div");
   overlay.id = "mob-overflow-menu";
   overlay.className = "hidden-menu";
@@ -154,10 +157,24 @@ function setupNavigation() {
   mobileNav.appendChild(overlay);
 }
 
-// ==================== ROUTING ====================
+// ==================== ROUTING ENGINE ====================
 
 function setupRouting() {
   window.addEventListener("popstate", handleRouteChange);
+
+  /**
+   * GLOBAL LINK HIJACKING (Event Delegation)
+   * Listens for clicks anywhere on the page. If the clicked element (or any of its parents)
+   * contains a `data-nav` attribute, intercept the click and route natively.
+   */
+  document.body.addEventListener("click", (e) => {
+    const navTarget = e.target.closest("[data-nav]");
+    if (navTarget) {
+      e.preventDefault();
+      const slug = navTarget.getAttribute("data-nav");
+      navigateTo(slug);
+    }
+  });
 }
 
 function handleInitialRoute() {
@@ -168,6 +185,7 @@ function handleRouteChange() {
   navigateTo(getCurrentTab(), false);
 }
 
+// Named export allows external manual triggers if strictly necessary
 export async function navigateTo(slug, updateHistory = true) {
   const item = NAV_ITEMS.find((nav) => nav.slug === slug);
   if (!item) return navigateTo("home");
@@ -175,7 +193,7 @@ export async function navigateTo(slug, updateHistory = true) {
   const uppercaseLabel = item.label.toUpperCase();
   document.title = `${uppercaseLabel} | Zavvy!`;
 
-  // Update active states
+  // Update active states across sidebar and mobile bars instantly
   document.querySelectorAll(".sidebar-item, .mob-nav-item").forEach((el) => {
     el.classList.toggle("active", el.dataset.slug === slug);
   });
@@ -192,29 +210,34 @@ async function loadSection(navItem) {
   const viewport = document.getElementById("content-viewport");
   if (!viewport) return;
 
-  // Fade out current content
+  // Fade out current content safely without altering global methods
   const currentContent = viewport.firstElementChild;
   if (currentContent) {
     currentContent.style.transition = "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
     currentContent.style.opacity = "0";
     currentContent.style.transform = "scale(0.95) translateY(20px)";
 
-    // Give time for exit animation
     await new Promise((resolve) => setTimeout(resolve, 450));
   }
 
-  if (currentSection?.cleanup) currentSection.cleanup();
+  // Gracefully clean up the previous page's streams
+  if (currentSection?.cleanup) {
+    try {
+      currentSection.cleanup();
+    } catch (err) {
+      console.error("Cleanup error on module switch:", err);
+    }
+  }
 
-  // Show loading state
+  // Show loading basin state
   viewport.innerHTML = `
-    <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s;">
+    <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; opacity: 1; transition: opacity 0.4s;">
       <div class="loading-img" style="width:100px;">
         <img src="/assets/img/Z!.webp" alt="loading"/>
       </div>
     </div>
   `;
 
-  // Brief loading delay for better UX
   await new Promise((resolve) => setTimeout(resolve, 180));
 
   try {
@@ -224,7 +247,7 @@ async function loadSection(navItem) {
     if (typeof module.init === "function") {
       viewport.innerHTML = "";
 
-      // Create wrapper for entrance animation
+      // Create wrapper for transition entrance animations
       const contentWrapper = document.createElement("div");
       contentWrapper.className = "section-content-wrapper";
       contentWrapper.style.cssText = `
@@ -237,10 +260,10 @@ async function loadSection(navItem) {
 
       viewport.appendChild(contentWrapper);
 
-      // Initialize the module
+      // Initialize module inside its dedicated sandboxed wrapper
       module.init(contentWrapper);
 
-      // Trigger smooth entrance
+      // Trigger crisp entrance animation frame
       requestAnimationFrame(() => {
         contentWrapper.style.opacity = "1";
         contentWrapper.style.transform = "scale(1) translateY(0)";

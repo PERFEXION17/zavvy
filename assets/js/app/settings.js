@@ -14,7 +14,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { toast } from "../toast.js";
 import { applyTheme, saveThemePreference } from "../ui.js";
-// import { initializeTheme, saveThemePreference} from "../ui.js";
 
 export function init(container) {
   console.log("🛠️ Zavvy! Settings module initialized (Base64 Mode)");
@@ -89,9 +88,7 @@ export function init(container) {
         <span class="icon"><i class="ph-thin ph-sign-out"></i></span>
         <span class="pad-dash-text">Log Out</span>
         <svg aria-hidden="true" focusable="false">
-          <rect
-            x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"
-          ></rect>
+          <rect x="0" y="0" rx="5" ry="5" fill="none" width="100%" height="100%"></rect>
         </svg>
       </button>
     </div>
@@ -168,7 +165,6 @@ async function loadUserProfile() {
       previewName.textContent = data.fullName
         ? data.fullName.split(" ")[0]
         : "Champion";
-
       if (data.photoURL) previewImg.src = data.photoURL;
     }
   } catch (error) {

@@ -18,7 +18,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/fi
 
 let currentUser = null;
 let currentFilter = "global";
-let currentUnsubscribers = []; // For cleanup
+let currentUnsubscribers = []; // For firestore cleanup
+let authUnsubscribe = null; // For auth memory cleanup
 
 export function init(container) {
   console.log("🏆 Zavvy! Real-time Leaderboards Initialized");
@@ -40,12 +41,11 @@ export function init(container) {
       </div>
 
       <div class="leaderboard-list" id="leaderboard-list">
-        <!-- Populated by real-time listener -->
-      </div>
+        </div>
     </div>
   `;
 
-  onAuthStateChanged(auth, (user) => {
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
       setupTabListeners();
@@ -218,6 +218,9 @@ async function renderMyRank(users, filter) {
 
 export function cleanup() {
   console.log("🧹 Leaderboards cleaned up");
+
+  // Clean up all streams and listeners to prevent memory leaks
   currentUnsubscribers.forEach((unsub) => unsub());
   currentUnsubscribers = [];
+  if (authUnsubscribe) authUnsubscribe();
 }

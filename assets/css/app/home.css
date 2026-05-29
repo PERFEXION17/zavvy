@@ -255,9 +255,13 @@
   justify-content: center;
   align-items: center;
   background: var(--dynamic-accent);
-  color: var(--text-color);
+  color: #f5f5fe;
   font-size: var(--font-size-xs);
   border-radius: var(--border-radius);
+}
+
+.darkmode .quests-complete{
+  color: #000010;
 }
 
 .quest-list {

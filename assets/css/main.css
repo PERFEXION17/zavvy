@@ -18,6 +18,7 @@
   --accent-color: #6c3baa;
   --accent-color-2: #d4af37;
   --dynamic-accent: #6c3baa;
+  --dynamic-accent-2: #6c3baa40;
   --neutral: white;
   --text-color: #090909;
   --success-green: #00b478;
@@ -64,6 +65,7 @@
   --neutral: #00000e;
   --text-color: #eee;
   --dynamic-accent: #d4af37;
+  --dynamic-accent-2: #d4af3720;
   --shadow: 0 4px 6px #d4af3720;
   --in-shadow: inset 0 -2px 4px #d4af3720;
     --border: 1px solid #d4af3720;
@@ -191,7 +193,7 @@ button {
 .btn-trace rect {
   width: 100%;
   height: 100%;
-  stroke: #6c3baa50;
+  stroke: var(--dynamic-accent-2);
   stroke-width: 2px;
   fill: transparent;
   stroke-dasharray: 800;
@@ -199,6 +201,15 @@ button {
   transform: rotate(0deg);
   transform-origin: center;
   transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-trace:hover rect {
+  stroke-dashoffset: 0;
+}
+
+.btn-trace:focus {
+  outline: 2px solid var(--dynamic-accent-2);
+  outline-offset: 4px;
 }
 
 .theme-toggle {
@@ -214,7 +225,7 @@ button {
 
 .theme-toggle circle {
   fill: transparent;
-  stroke: #6c3baa50;
+  stroke: var(--dynamic-accent);
   stroke-width: 2px;
   stroke-dasharray: 120;
   stroke-dashoffset: 120;
@@ -228,22 +239,13 @@ button {
 }
 
 .theme-toggle:focus {
-  outline: 2px solid #6c3baa50;
+  outline: 2px solid var(--dynamic-accent);
   outline-offset: 4px;
   border-radius: 50% !important;
 }
 
 .logout-btn rect {
   stroke: #ef444499;
-}
-
-.btn-trace:hover rect {
-  stroke-dashoffset: 0;
-}
-
-.btn-trace:focus {
-  outline: 2px solid #6c3baa50;
-  outline-offset: 4px;
 }
 
 /* --- Reusable Button Loading State --- */

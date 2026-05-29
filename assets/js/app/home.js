@@ -1,6 +1,6 @@
 /**
  * home.js - Zavvy! Premium Minimal Dashboard
- * Refactored for SPA Memory Management, Single-Source Auth & Real-Time Data Streams
+ * Refactored for Clean Content-Isolation & Declarative SPA Navigation
  */
 
 import { auth, db } from "../firebase-config.js";
@@ -29,7 +29,7 @@ export function init(container) {
   if (hour < 12) timeOfDayGreeting = "Good morning";
   else if (hour < 18) timeOfDayGreeting = "Good afternoon";
 
-  // INJECT STRUCTURAL HTML (Ids and classes preserved strictly)
+  // INJECT CLEAN HTML STRUCTURE (No inline onclick bindings)
   container.innerHTML = `
     <div class="home-container">
       <div class="hero-banner">
@@ -90,7 +90,7 @@ export function init(container) {
             <i class="ph-thin ph-clock-counter-clockwise"></i>
             <h2>Recent Activity</h2>
           </div>
-          <a href="?tab=profile" onclick="window.navigateTo('profile'); return false;" class="view-all">View All →</a>
+          <a href="?tab=profile" data-nav="profile" class="view-all">View All →</a>
         </div>
         <div class="activity-list" id="recent-activity"></div>
       </div>
@@ -101,21 +101,14 @@ export function init(container) {
             <i class="ph-thin ph-trophy"></i>
             <h2>Top Champions</h2>
           </div>
-          <a href="?tab=leaderboards" onclick="window.navigateTo('leaderboards'); return false;" class="view-all">Full Rankings →</a>
+          <a href="?tab=leaderboards" data-nav="leaderboards" class="view-all">Full Rankings →</a>
         </div>
         <div id="home-leaderboard-teaser" class="teaser-list"></div>
       </div>
     </div>
   `;
 
-  // Expose routing globally for in-page anchors
-  window.navigateTo = (slug) => {
-    import("../portal.js")
-      .then((mod) => mod.navigateTo(slug))
-      .catch((err) => console.error("Navigation failed:", err));
-  };
-
-  // BOOTSTRAP DYNAMIC LIFECYCLE LISTENERS
+  // BOOTSTRAP REALTIME DATA STREAMS
   updateCurrentDate();
   initializeDataStream();
 }
@@ -126,7 +119,6 @@ function initializeDataStream() {
   authUnsubscribe = onAuthStateChanged(auth, (user) => {
     if (!user) return;
 
-    // 1. Instantly resolve name from user baseline object
     const nameEl = document.getElementById("user-firstname");
     if (nameEl) {
       nameEl.textContent = user.displayName
@@ -134,7 +126,6 @@ function initializeDataStream() {
         : "Champion";
     }
 
-    // 2. Stream Live User Progress Metrics and Quest Engine states
     const userRef = doc(db, "users", user.uid);
     userUnsubscribe = onSnapshot(
       userRef,
@@ -145,7 +136,6 @@ function initializeDataStream() {
         const xp = data.globalXP || 0;
         const levelData = gameEngine.calculateLevel(xp);
 
-        // Core Progress Updates
         document.getElementById("xp-value").textContent = xp.toLocaleString();
         document.getElementById("current-level").textContent =
           `Level ${levelData.level}`;
@@ -159,16 +149,13 @@ function initializeDataStream() {
         renderStats(data);
         renderDailyQuests(data);
       },
-      (error) => {
-        console.error("User profile document streaming error:", error);
-      },
+      (error) => console.error("User profile document stream failure:", error),
     );
 
-    // 3. Stream Live Recent Activity Logs Subcollection
     const logsQuery = query(
       collection(db, "users", user.uid, "activity_logs"),
       orderBy("timestamp", "desc"),
-      limit(4), // Fits clean and professional within layout grids
+      limit(4),
     );
 
     activityUnsubscribe = onSnapshot(
@@ -180,12 +167,10 @@ function initializeDataStream() {
         });
         renderRecentActivity(logs);
       },
-      (error) => {
-        console.error("Activity logs collection streaming error:", error);
-      },
+      (error) =>
+        console.error("Activity logs collection stream failure:", error),
     );
 
-    // 4. Boot up live leaderboard bracket teaser
     loadRealTimeTeaser();
   });
 }
@@ -256,22 +241,18 @@ function renderStats(data) {
   `;
 }
 
-// ==================== DYNAMIC QUEST REHYDRATION ====================
-
 function renderDailyQuests(data) {
   const questsContainer = document.getElementById("daily-quests");
   if (!questsContainer) return;
 
   let activeQuests = [];
 
-  // Check if dailyQuests entry is valid for the current day cycle
   if (
     data.dailyQuests &&
     !gameEngine.shouldResetQuests(data.dailyQuests.lastResetDate)
   ) {
     activeQuests = data.dailyQuests.quests || [];
   } else {
-    // Graceful frontend sync display before the next interaction commits updates to Firestore
     activeQuests = gameEngine.QUEST_TEMPLATES.map((tpl) => ({
       ...tpl,
       progress: 0,
@@ -279,14 +260,12 @@ function renderDailyQuests(data) {
     }));
   }
 
-  // Render text indicator
   const completedCount = activeQuests.filter((q) => q.completed).length;
   const metricsIndicator = document.getElementById("quests-complete");
   if (metricsIndicator) {
     metricsIndicator.textContent = `${completedCount}/${activeQuests.length} Done`;
   }
 
-  // Descriptions dictionary mapping quest types seamlessly
   const getQuestDescription = (type) => {
     switch (type) {
       case "sim_complete":
@@ -344,8 +323,6 @@ function renderDailyQuests(data) {
     html || `<p class="empty-msg">No active quests found.</p>`;
 }
 
-// ==================== LIVE RESPONSIVE RECENT ACTIVITY ====================
-
 function renderRecentActivity(logs) {
   const container = document.getElementById("recent-activity");
   if (!container) return;
@@ -361,27 +338,14 @@ function renderRecentActivity(logs) {
     return;
   }
 
-  // Terminology mapper aligning with 'neo sim', 'the synapse', 'daily quest'
   const resolveActivityMetadata = (type) => {
     switch (type) {
       case "sim_complete":
-        return {
-          title: "Zavvy! SIM",
-          label: "SIM",
-          icon: "laptop",
-        };
+        return { title: "Zavvy! SIM", label: "SIM", icon: "laptop" };
       case "neo_lesson":
-        return {
-          title: "Zavvy! Neo",
-          label: "Neo",
-          icon: "baby",
-        };
+        return { title: "Zavvy! Neo", label: "Neo", icon: "book-open" };
       case "synapse_game":
-        return {
-          title: "The Synapse",
-          label: "The Synapse",
-          icon: "brain",
-        };
+        return { title: "The Synapse", label: "The Synapse", icon: "brain" };
       case "daily_quest":
         return {
           title: "Daily Quest Mastered",
@@ -396,12 +360,9 @@ function renderRecentActivity(logs) {
   let html = "";
   logs.forEach((log) => {
     const meta = resolveActivityMetadata(log.activity);
-
-    // Fallback indicator renders saved score percentage if present, otherwise displays currency fuel rewards
-    const performanceIndicator =
-      meta.showScore
-        ? `${log.score}%`
-        : `<img src="/assets/img/icons/spark-icon.webp" alt="spark-icon"> +${log.sparks || 0}`;
+    const performanceIndicator = meta.showScore
+      ? `${log.score}%`
+      : `<img src="/assets/img/icons/spark-icon.webp" alt="spark-icon"> +${log.sparks || 0}`;
 
     html += `
       <div class="activity-row">
@@ -422,8 +383,6 @@ function renderRecentActivity(logs) {
 
   container.innerHTML = html;
 }
-
-// ==================== REAL-TIME BRACKET TEASER ====================
 
 function loadRealTimeTeaser() {
   const teaserEl = document.getElementById("home-leaderboard-teaser");
@@ -447,7 +406,6 @@ function loadRealTimeTeaser() {
     q,
     (snapshot) => {
       let html = "";
-
       snapshot.docs.forEach((docSnap, index) => {
         const user = docSnap.data();
         const rank = index + 1;
@@ -465,13 +423,13 @@ function loadRealTimeTeaser() {
         }
 
         html += `
-        <div class="teaser-row ${isTop3 ? "top-three" : ""}">
-          <div class="teaser-rank">${rankDisplay}</div>
-          <img src="${user.photoURL || "/assets/img/avatar.webp"}" class="teaser-avatar" alt="">
-          <div class="teaser-name">${user.fullName || user.username || "Champion"}</div>
-          <div class="teaser-xp">${(user.globalXP || 0).toLocaleString()} XP</div>
-        </div>
-      `;
+          <div class="teaser-row ${isTop3 ? "top-three" : ""}">
+            <div class="teaser-rank">${rankDisplay}</div>
+            <img src="${user.photoURL || "/assets/img/avatar.webp"}" class="teaser-avatar" alt="">
+            <div class="teaser-name">${user.fullName || user.username || "Champion"}</div>
+            <div class="teaser-xp">${(user.globalXP || 0).toLocaleString()} XP</div>
+          </div>
+        `;
       });
 
       teaserEl.innerHTML =
@@ -480,7 +438,7 @@ function loadRealTimeTeaser() {
     },
     (error) => {
       console.error("Leaderboard teaser engine runtime failure:", error);
-      teaserEl.innerHTML = `<div class="empty-teaser"><p>Live brackets temporary offline.</p></div>`;
+      teaserEl.innerHTML = `<div class="empty-teaser"><p>Live brackets temporarily offline.</p></div>`;
     },
   );
 }
@@ -488,14 +446,13 @@ function loadRealTimeTeaser() {
 // ==================== SPA MEMORY CLEANUP HOOK ====================
 
 export function cleanup() {
-  console.log(
-    "🧹 Home section cleaned up. All dynamic server streams terminated.",
-  );
+  console.log("🧹 Home section streams terminated cleanly.");
 
+  // Terminate data pipelines safely
   if (userUnsubscribe) userUnsubscribe();
   if (activityUnsubscribe) activityUnsubscribe();
   if (teaserUnsubscribe) teaserUnsubscribe();
   if (authUnsubscribe) authUnsubscribe();
 
-  if (window.navigateTo) delete window.navigateTo;
+  // Note: window.navigateTo is untouched so navigation never crashes!
 }

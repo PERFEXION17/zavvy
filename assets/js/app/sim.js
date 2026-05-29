@@ -10,14 +10,13 @@ import { simQuestions } from "../sim-questions.js";
 
 let currentUser = null;
 let selectedSubjects = ["english"];
+let authUnsubscribe = null; // Memory management hook
 
 export function init(container) {
   console.log("🚀 Sim Module Initialized with Landing Page");
 
   container.innerHTML = `
     <div class="sim-container">
-
-      <!-- MINI LANDING PAGE -->
       <div id="sim-landing-page" class="sim-landing">
         <div class="sim-landing-text">
           <h1><img src="/assets/img/zavvy!-sim.webp" alt="sim logo"></h1>
@@ -40,7 +39,6 @@ export function init(container) {
         </div>
       </div>
 
-      <!-- SUBJECT SELECTION (Hidden Initially) -->
       <div id="sim-selection-page" class="sim-selection hidden">
         <div class="sim-header">
           <h1><img src="/assets/img/zavvy!-sim.webp" alt="sim logo"></h1>
@@ -73,7 +71,7 @@ export function init(container) {
 
 // ==================== AUTH ====================
 function initializeAuth() {
-  onAuthStateChanged(auth, (user) => {
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
     currentUser = user;
   });
 }
@@ -159,12 +157,9 @@ function renderSelectedSubjects() {
 
 // ==================== EVENT LISTENERS ====================
 function setupEventListeners() {
-  // Landing button
   document
     .getElementById("enter-sim-btn")
     .addEventListener("click", showSelectionPage);
-
-  // Start Exam
   document
     .getElementById("start-exam-btn")
     .addEventListener("click", startExam);
@@ -182,4 +177,5 @@ function startExam() {
 
 export function cleanup() {
   console.log("🧹 Sim module cleaned up");
+  if (authUnsubscribe) authUnsubscribe(); // Terminate Auth listener gracefully
 }
