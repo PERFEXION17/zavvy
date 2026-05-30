@@ -7,6 +7,7 @@
 import { auth } from "../firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { simQuestions } from "../sim-questions.js";
+import { showConfirmModal } from "../ui.js";
 
 let currentUser = null;
 let selectedSubjects = ["english"];
@@ -124,14 +125,19 @@ function populateSubjectSelection() {
   });
 }
 
-function updateSelection(e) {
+async function updateSelection(e) {
   const checked = Array.from(
     document.querySelectorAll(".subject-checkbox:checked"),
   ).map((cb) => cb.value);
 
   if (checked.length > 3) {
     e.target.checked = false;
-    alert("You can only select 3 additional subjects!");
+    await showConfirmModal({
+      title: "Limit Reached",
+      message: "You can only select 3 additional subjects!",
+      confirmText: "Okay",
+      cancelText: "Close",
+    });
     return;
   }
 
