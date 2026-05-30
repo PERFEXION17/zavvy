@@ -9,7 +9,6 @@ import {
   updateDoc,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { gameEngine } from "../game-engine.js";
-import { getDisplayStreak } from "../game-engine.js";
 
 const streakEl = document.getElementById("header-streak");
 const sparksEl = document.getElementById("header-sparks");
@@ -41,7 +40,6 @@ export function initHeaderWidget() {
             data.lastHeartUpdate,
           );
 
-          // If the math says they earned a new heart while away, silently update the database!
           if (regenData.updated) {
             await updateDoc(userRef, {
               hearts: regenData.hearts,
@@ -50,12 +48,28 @@ export function initHeaderWidget() {
             return;
           }
 
-          const displayStreak = gameEngine.getDisplayStreak(
+          // 2. Hydrate the streak and update the Flame UI!
+          const streakData = gameEngine.getDisplayStreak(
             data.currentStreak || 0,
             data.lastActiveDate,
           );
 
-          streakEl.textContent = displayStreak;
+          streakEl.textContent = streakData.count;
+
+          // Target the flame icon dynamically
+          const streakIcon = streakEl.previousElementSibling;
+          if (streakIcon && streakIcon.tagName === "IMG") {
+            if (streakData.maintainedToday && streakData.count > 0) {
+              // Streak is active and defended today -> Full Color
+              streakIcon.style.filter = "none";
+              streakIcon.style.opacity = "1";
+            } else {
+              // Streak is pending (or 0) -> Grayed out
+              streakIcon.style.filter = "grayscale(100%)";
+              streakIcon.style.opacity = "0.3";
+            }
+          }
+
           sparksEl.textContent = data.sparks || 0;
           heartsEl.textContent = regenData.hearts;
           xpEl.textContent = data.globalXP || 0;

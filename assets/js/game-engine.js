@@ -272,16 +272,22 @@ export function calculateNewStreak(
   return { currentStreak: 1, highestStreak };
 }
 
-// ==================== STREAK DISPLAY HYDRATOR ====================
+/// ==================== STREAK DISPLAY HYDRATOR ====================
 
 export function getDisplayStreak(currentStreak, lastActiveDate) {
   const today = getTodayDate();
-  if (!lastActiveDate) return 0;
-  if (lastActiveDate === today) return currentStreak;
-
-  if (isYesterday(lastActiveDate)) return currentStreak;
-
-  return 0;
+  
+  // No history at all = 0 streak, not maintained today
+  if (!lastActiveDate) return { count: 0, maintainedToday: false };
+  
+  // Played today! Streak is alive and defended.
+  if (lastActiveDate === today) return { count: currentStreak, maintainedToday: true };
+  
+  // Played yesterday. Streak is technically alive, but waiting for today's action.
+  if (isYesterday(lastActiveDate)) return { count: currentStreak, maintainedToday: false };
+  
+  // Missed a full day. Streak is dead.
+  return { count: 0, maintainedToday: false }; 
 }
 
 // ==================== DAILY QUESTS SYSTEM ====================
