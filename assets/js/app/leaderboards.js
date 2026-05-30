@@ -15,6 +15,7 @@ import {
   getDoc,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import {gameEngine} from "../game-engine.js";
 
 let currentUser = null;
 let currentFilter = "global";
@@ -162,6 +163,8 @@ function renderLeaderboard(users) {
       rankDisplay = `<img src="${medalSrc}" class="medal-img" alt="Rank ${rank} Medal">`;
     }
 
+    const levelData = gameEngine.calculateLevel(user.globalXP || 0);
+
     html += `
       <div class="leaderboard-row ${isTop3 ? "top-three" : ""} ${isCurrentUser ? "current-user" : ""}">
         <div class="rank-position">
@@ -171,7 +174,7 @@ function renderLeaderboard(users) {
           <img src="${user.photoURL || "/assets/img/avatar.webp"}" alt="" class="lb-avatar">
           <div class="user-meta">
             <strong>${user.fullName || user.username || "Zavvy Champion"}</strong>
-            ${user.state ? `<small class="user-state">${user.state}</small>` : ""}
+            <small class="user-level">Level ${levelData.level}</small>
           </div>
         </div>
         <div class="xp-info">
