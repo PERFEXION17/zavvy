@@ -185,13 +185,13 @@ function handleRouteChange() {
   navigateTo(getCurrentTab(), false);
 }
 
-// Named export allows external manual triggers if strictly necessary
 export async function navigateTo(slug, updateHistory = true) {
   const item = NAV_ITEMS.find((nav) => nav.slug === slug);
   if (!item) return navigateTo("home");
 
-  const uppercaseLabel = item.label.toUpperCase();
-  document.title = `${uppercaseLabel} | Zavvy!`;
+  // The Title Fix: Use the standard label, but strictly uppercase 'SIM'
+  const displayLabel = item.slug === "sim" ? "SIM" : item.label;
+  document.title = `${displayLabel} | Zavvy!`;
 
   // Update active states across sidebar and mobile bars instantly
   document.querySelectorAll(".sidebar-item, .mob-nav-item").forEach((el) => {

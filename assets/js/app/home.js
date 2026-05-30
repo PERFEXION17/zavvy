@@ -358,11 +358,32 @@ function renderRecentActivity(logs) {
   };
 
   let html = "";
+
   logs.forEach((log) => {
     const meta = resolveActivityMetadata(log.activity);
-    const performanceIndicator = meta.showScore
-      ? `${log.score}%`
-      : `<img src="/assets/img/icons/spark-icon.webp" alt="spark-icon"> +${log.sparks || 0}`;
+
+    let performanceIndicator = "";
+
+    if (log.activity === "sim_complete" && log.score !== undefined) {
+      const score = Number(log.score);
+      let scoreColorClass = "score-red";
+
+      if (score >= 250) {
+        scoreColorClass = "score-green";
+      } else if (score >= 180) {
+        scoreColorClass = "score-gold";
+      }
+
+      performanceIndicator = `<span class="${scoreColorClass}">${score}`;
+
+      // Percentage for Neo / Synapse
+    } else if (meta.showScore && log.score !== undefined) {
+      performanceIndicator = `${log.score}%`;
+
+      // Sparks / Default
+    } else {
+      performanceIndicator = `<img src="/assets/img/icons/spark-icon.webp" alt="spark-icon"> +${log.sparks || 0}`;
+    }
 
     html += `
       <div class="activity-row">
@@ -375,6 +396,7 @@ function renderRecentActivity(logs) {
         </div>
         <div class="activity-stats">
           <div class="activity-score">${performanceIndicator}</div>
+          <div class="activity-score"><img src="/assets/img/icons/spark-icon.webp" alt="spark-icon"> +${log.sparks || 0}</div>
           <div class="activity-xp"><img src="/assets/img/icons/xp-icon.webp" alt="xp-icon"> +${log.xp || 0}</div>
         </div>
       </div>

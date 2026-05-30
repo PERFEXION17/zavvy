@@ -260,7 +260,7 @@
   border-radius: var(--border-radius);
 }
 
-.darkmode .quests-complete{
+.darkmode .quests-complete {
   color: #000010;
 }
 
@@ -313,14 +313,14 @@
 .quest-content p {
   margin: 0;
   font-size: var(--font-size-xs);
-  opacity: .6;
+  opacity: 0.6;
 }
 
 .progress-container {
   margin: var(--spacing-xs) 0;
   display: flex;
   flex-direction: column;
-  gap:var(--spacing-xs);
+  gap: var(--spacing-xs);
 }
 
 .progress-bar {
@@ -417,6 +417,7 @@
 
 .activity-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-xs);
 }
 
@@ -431,7 +432,28 @@
   width: 25px;
 }
 
-/* Loading animation for leaderboard brackets */
+/* Recent Activity Score Colors */
+.activity-score .score-green {
+  margin-right: var(--spacing-xs);
+  color: var(--success-green);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-md);
+}
+
+.activity-score .score-gold {
+  margin-right: var(--spacing-xs);
+  color: var(--accent-color-2);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-md);
+}
+
+.activity-score .score-red {
+  margin-right: var(--spacing-xs);
+  color: var(--error-red);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-md);
+}
+
 @keyframes pulse {
   0% {
     transform: scale(0.95);
